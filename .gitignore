@@ -17,6 +17,8 @@ build/
 [Ll]og/
 [Ll]ogs/
 
+.vscode/
+
 # Roslyn cache directories
 *.ide/
 
