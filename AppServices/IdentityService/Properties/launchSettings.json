@@ -1,0 +1,31 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5000",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "SelfHost": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PIS_DB_HOST": "127.0.0.1",
+        "PIS_DB_PORT": "5432",
+        "PIS_DB_USER": "postgres",
+        "PIS_DB_PASSWORD": "yfa$t?c&=7gYYn8L"
+      },
+      "applicationUrl": "http://localhost:5000"
+    }
+  }
+}

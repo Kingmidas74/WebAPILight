@@ -1,0 +1,68 @@
+version: "3.0"
+services:
+
+    webapi_service:
+        image: phrygia_webapi_service
+        build:
+          context: .
+          dockerfile: ./AppServices/WebAPIService/Dockerfile        
+        container_name: webapi_service
+        ports:
+          - "5002:5002"
+        environment: 
+          API_DB_HOST: "172.17.0.1"
+          API_DB_PORT: "5432"
+          API_DB_USER: "postgres"
+          API_DB_PASSWORD: "IlJU7f71Vh7rM1yv"
+          PIS_HOST: "172.17.0.1"
+          PIS_PORT: "5000"
+          ASPNETCORE_ENVIRONMENT: "Development"
+        depends_on:    
+          -  identity_service    
+        #networks:
+         # services-network:
+          #  aliases:
+           # - webapi_service
+  
+    identity_service:
+        image: phrygia_identity_service
+        build:
+          context: ./AppServices/IdentityService
+          dockerfile: Dockerfile        
+        container_name: identity_service
+        ports:
+          - "5000:5000"
+        environment: 
+          PIS_DB_HOST: "172.17.0.1"
+          PIS_DB_PORT: "5432"
+          PIS_DB_USER: "postgres"
+          PIS_DB_PASSWORD: "IlJU7f71Vh7rM1yv"
+          ASPNETCORE_ENVIRONMENT: "Development"
+        depends_on:
+          -  db        
+        #networks:
+          #services-network:
+           # aliases:
+         #   - identity_service      
+    db:
+        image: "postgres"
+        volumes: 
+          - pg_data:/var/lib/postgresql/data        
+        ports: 
+          - "5432:5432"
+        container_name: pg
+        environment:
+            PGDATA: "/var/lib/postgresql/data/pgdata"
+            POSTGRES_PASSWORD: "IlJU7f71Vh7rM1yv"
+            POSTGRES_USER: "postgres"
+        #networks:
+         # services-network:
+          #  aliases:
+           #   - db
+
+volumes: 
+  pg_data:
+
+#networks:
+ # services-network:    
+  #  driver: bridge
