@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.IO;
 using System.Text;
+using BaseWorkerService.Models;
 
 namespace BaseWorkerService
 {
@@ -33,13 +34,6 @@ namespace BaseWorkerService
             }
         }
 
-        private static ILogger BuildLogger(IServiceProvider provider)
-        {            
-            var configuration = provider.GetRequiredService<IConfiguration>();
-            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
-            return Log.Logger;
-        }
-
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host
                 .CreateDefaultBuilder()
@@ -57,8 +51,10 @@ namespace BaseWorkerService
                     }
                 })
                 .ConfigureServices((hostContext, services) =>
-                {
-                    Log.Logger = BuildLogger(services.BuildServiceProvider());
+                {   
+                    IConfiguration configuration = hostContext.Configuration;                 
+                    services.Configure<RabbitMQSettings>(configuration.GetSection(nameof(RabbitMQSettings)));                    
+                    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();                    
                     services.AddHostedService<Worker>();
                 })
                 .UseSerilog();

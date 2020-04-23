@@ -3,7 +3,11 @@
     "BaseWorkerService": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development"
+        "DOTNET_ENVIRONMENT": "Development",
+        "RMQ_HOST": "localhost",
+        "RMQ_PORT": "15672",
+        "RMQ_USER": "rabbitmq",
+        "RMQ_PASSWORD": "IlJU7f71Vh7rM1yv"
       }
     }
   }
