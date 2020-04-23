@@ -45,7 +45,7 @@ services:
            # aliases:
          #   - identity_service      
     db:
-        image: "postgres"
+        image: postgres:12.2-alpine
         volumes: 
           - pg_data:/var/lib/postgresql/data        
         ports: 
@@ -59,9 +59,26 @@ services:
          # services-network:
           #  aliases:
            #   - db
+    
+    rabbitmq:
+        image: rabbitmq:3.8.3-management-alpine
+        container_name: rabbitmq
+        environment: 
+          RABBITMQ_DEFAULT_USER: "rabbitmq"
+          RABBITMQ_DEFAULT_PASS: "IlJU7f71Vh7rM1yv"
+        volumes:
+            - rmq_etc:/etc/rabbitmq/
+            - rmq_data:/var/lib/rabbitmq/
+            - rmq_logs:/var/log/rabbitmq/
+        ports:
+            - "5672:5672"
+            - "15672:15672"
 
 volumes: 
   pg_data:
+  rmq_etc:
+  rmq_data:
+  rmq_logs:
 
 #networks:
  # services-network:    
