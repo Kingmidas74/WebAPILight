@@ -4,24 +4,28 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog.Extensions.Logging;
+using Serilog.Extensions.Hosting;
+using Serilog.Settings.Configuration;
+using Newtonsoft.Json;
 
 namespace BaseWorkerService
 {
     public class Worker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
-
-        public Worker(ILogger<Worker> logger)
+        public IConfiguration Configuration { get; }
+        public Worker()
         {
-            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                Log.Logger.Information("Worker running at: {time}", DateTimeOffset.Now);                
                 await Task.Delay(1000, stoppingToken);
             }
         }

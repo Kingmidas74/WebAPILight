@@ -2,22 +2,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-
-using Microsoft.OpenApi.Models;
-using System;
-using System.Reflection;
-using System.IO;
 using Newtonsoft.Json;
 using WebAPIService.Middleware;
 using WebAPIService.Models;
 using Microsoft.Extensions.DependencyInjection;
 using BusinessServices.Extensions;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace WebAPIService
 {
