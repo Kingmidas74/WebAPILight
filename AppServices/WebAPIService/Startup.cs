@@ -7,7 +7,9 @@ using WebAPIService.Middleware;
 using WebAPIService.Models;
 using Microsoft.Extensions.DependencyInjection;
 using BusinessServices.Extensions;
+using RabbitMQ.Client;
 using Serilog;
+using System;
 
 namespace WebAPIService
 {
@@ -36,7 +38,7 @@ namespace WebAPIService
             services.AddSwagger();
             services.AddAuth(Configuration);
             services.AddSQL(Configuration);
-
+            services.AddQueueService(Configuration);
             services.AddControllers()
                     .AddNewtonsoftJson(options =>
                     {
@@ -59,8 +61,7 @@ namespace WebAPIService
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {            
-            
+        {   
             app.UseMiddleware<RequestResponseLoggingMiddleware>();          
             app.UseCors(nameof(CorsPolicy));
             if (env.IsDevelopment())

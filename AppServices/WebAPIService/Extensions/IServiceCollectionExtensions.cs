@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using RabbitMQ.Client;
 
 using Microsoft.OpenApi.Models;
 using System;
@@ -18,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using WebAPIService.Services;
 
 namespace WebAPIService
 {
@@ -63,24 +65,6 @@ namespace WebAPIService
 
                     options.Audience = "phrygiawebapi";
                 });
-            /*services.AddAuthorization();
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddIdentityServerAuthentication(
-                        options =>
-                        {
-                            options.Authority = identityServerURI;
-                            options.ApiName = "phrygiawebapi";                    
-                            options.ApiSecret = "secret";
-                            options.RequireHttpsMetadata = false;
-                            options.EnableCaching = true;
-                            options.CacheDuration = TimeSpan.FromMinutes(10);
-                        })
-                    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-                        {
-                            options.Authority = identityServerURI;
-                            options.RequireHttpsMetadata = false;
-                            options.Audience = "phrygiawebapi";
-                        });*/
             return services;
         }
         public static IServiceCollection AddSwagger(this IServiceCollection services)
@@ -133,6 +117,34 @@ namespace WebAPIService
                 c.IncludeXmlComments(xmlPath);                    
             });
             return services;
+        }
+
+        public static IServiceCollection AddQueueService(this IServiceCollection services, IConfiguration configuration)
+        {
+            var rabbitMQSeriveURI = string.Format(configuration.GetValue<string>("ApplicationOptions:RabbitMQSeriveURI")
+                    , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_USER))
+                    , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_PASSWORD))
+                    , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_HOST))
+                    , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_PORT)));
+
+            services.AddTransient<MessageService>(s=>
+            {
+                var factory = new ConnectionFactory {
+                    Uri = new Uri(rabbitMQSeriveURI)
+                };
+                var connection = factory.CreateConnection();
+                var channel = connection.CreateModel();
+                return new MessageService(channel);
+            });            
+            return services;
+        }
+
+        public static void AddFactory<TService, TImplementation>(this IServiceCollection services) 
+        where TService : class
+        where TImplementation : class, TService
+        {
+            services.AddTransient<TService, TImplementation>();
+            services.AddSingleton<Func<TService>>(x => () => x.GetService<TService>());
         }
     }
 }

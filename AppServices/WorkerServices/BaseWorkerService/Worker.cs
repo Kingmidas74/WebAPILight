@@ -32,9 +32,11 @@ namespace BaseWorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var ms = new MessageService(RabbitMQSettings);
             while (!stoppingToken.IsCancellationRequested)
             {
                 Log.Logger.Information("Worker running at: {time}", DateTimeOffset.Now);                
+              //  ms.Enqueue($"test-{DateTimeOffset.Now}");
                 await Task.Delay(1000, stoppingToken);
             }
         }

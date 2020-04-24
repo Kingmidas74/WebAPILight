@@ -8,5 +8,9 @@ namespace WebAPIService.Models
         API_DB_PASSWORD,
         PIS_HOST,
         PIS_PORT,
+        RMQ_USER,
+        RMQ_PASSWORD,
+        RMQ_HOST,
+        RMQ_PORT
     }
 }

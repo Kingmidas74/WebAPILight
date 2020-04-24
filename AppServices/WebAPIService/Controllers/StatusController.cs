@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using WebAPIService.Extensions;
+using WebAPIService.Services;
 
 namespace WebAPIService.Controllers
 {
@@ -11,8 +12,10 @@ namespace WebAPIService.Controllers
     [ApiController]    
     public class StatusController:ControllerBase
     {
-        public StatusController()
+        private MessageService MessageService;
+        public StatusController(MessageService messageService)
         {
+            this.MessageService = messageService;
         }
 
         /// <summary>
@@ -22,6 +25,7 @@ namespace WebAPIService.Controllers
         [HttpGet(nameof(GetFreeStatus))]
         public IActionResult GetFreeStatus()
         {
+            MessageService.Enqueue(nameof(GetFreeStatus),"public");
             return Ok();
         }
 
@@ -33,7 +37,9 @@ namespace WebAPIService.Controllers
         [Authorize]
         public IActionResult GetPrivateStatus()
         {
-            return Ok(User.ExtractIdentifier());
+            var userId = User.ExtractIdentifier();
+            MessageService.Enqueue($"{nameof(GetFreeStatus)} by user {userId}","private");
+            return Ok(userId);
         }
     }
 }

@@ -8,5 +8,7 @@ namespace BaseWorkerService.Models
         public string User {get;set;}
         public string Password {get;set;}
         public QueueSettings[] Queues { get; set; }
+        public ExchangeSettings[] Exchanges { get; set; }
+        public BindingSettings[] Bindings { get; set; }
     }
 }
