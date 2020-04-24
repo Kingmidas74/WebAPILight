@@ -27,6 +27,11 @@ namespace WebAPIService
     {
         public static IServiceCollection AddSQL(this IServiceCollection services, IConfiguration configuration)
         {
+            Console.WriteLine(nameof(AddSQL));
+            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_HOST)));
+            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PORT)));
+            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_USER)));
+            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PASSWORD)));
             DataAccess.DataAccessPolicy.ConnectionString = string.Format(configuration.GetConnectionString("DefaultConnection")
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_HOST))
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PORT))
@@ -54,7 +59,11 @@ namespace WebAPIService
         }
         public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
         {
-            var identityServerURI = string.Format(configuration.GetValue<string>("ApplicationOptions:IdentityServiceURI")
+            Console.WriteLine(nameof(AddAuth));
+            var applicationOptions = new ApplicationOptions();
+            configuration.GetSection(nameof(ApplicationOptions)).Bind(applicationOptions);
+            Console.WriteLine(applicationOptions.IdentityServiceURI);            
+            var identityServerURI = string.Format(applicationOptions.IdentityServiceURI
                     , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.PIS_HOST))
                     , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.PIS_PORT)));
             services.AddAuthentication("Bearer")
@@ -121,7 +130,10 @@ namespace WebAPIService
 
         public static IServiceCollection AddQueueService(this IServiceCollection services, IConfiguration configuration)
         {
-            var rabbitMQSeriveURI = string.Format(configuration.GetValue<string>("ApplicationOptions:RabbitMQSeriveURI")
+            var applicationOptions = new ApplicationOptions();
+            configuration.GetSection(nameof(ApplicationOptions)).Bind(applicationOptions);
+            Console.WriteLine(applicationOptions.RabbitMQSeriveURI);            
+            var rabbitMQSeriveURI = string.Format(applicationOptions.RabbitMQSeriveURI
                     , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_USER))
                     , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_PASSWORD))
                     , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.RMQ_HOST))

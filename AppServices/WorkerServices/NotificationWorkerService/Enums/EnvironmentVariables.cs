@@ -1,4 +1,4 @@
-namespace BaseWorkerService.Enums
+namespace NotificationWorkerService.Enums
 {
     public enum EnvironmentVariables
     {

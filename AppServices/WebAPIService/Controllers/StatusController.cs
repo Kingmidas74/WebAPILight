@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using System;
 using WebAPIService.Extensions;
 using WebAPIService.Services;
+using Contracts.Shared.Enums;
 
 namespace WebAPIService.Controllers
 {
@@ -25,7 +26,7 @@ namespace WebAPIService.Controllers
         [HttpGet(nameof(GetFreeStatus))]
         public IActionResult GetFreeStatus()
         {
-            MessageService.Enqueue(nameof(GetFreeStatus),"public");
+            MessageService.Enqueue(nameof(GetFreeStatus),MessageBusEvents.UserNotificationEvent.GetDescription());
             return Ok();
         }
 
@@ -38,7 +39,7 @@ namespace WebAPIService.Controllers
         public IActionResult GetPrivateStatus()
         {
             var userId = User.ExtractIdentifier();
-            MessageService.Enqueue($"{nameof(GetFreeStatus)} by user {userId}","private");
+            MessageService.Enqueue($"{nameof(GetFreeStatus)} by user {userId}",MessageBusEvents.UserNotificationEvent.GetDescription()+".test");
             return Ok(userId);
         }
     }

@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "BaseWorkerService": {
+    "NotificationWorkerService": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",

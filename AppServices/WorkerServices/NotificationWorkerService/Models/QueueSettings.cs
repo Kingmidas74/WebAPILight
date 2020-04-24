@@ -1,4 +1,4 @@
-namespace BaseWorkerService.Models
+namespace NotificationWorkerService.Models
 {
     public partial class QueueSettings
     {

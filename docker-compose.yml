@@ -8,8 +8,8 @@ services:
           dockerfile: ./AppServices/WebAPIService/Dockerfile        
         container_name: webapi_service
         ports:
-          - "5002:5002"
-          - "5003:5003"
+          - "5002:80"
+          - "5003:443"
         environment: 
           API_DB_HOST: "172.17.0.1"
           API_DB_PORT: "5432"
@@ -21,15 +21,12 @@ services:
           RMQ_PASSWORD: "IlJU7f71Vh7rM1yv"
           RMQ_HOST: "172.17.0.1"
           RMQ_PORT: "5672"
-          ASPNETCORE_ENVIRONMENT: "Development"
+          ASPNETCORE_ENVIRONMENT: "Development"          
         depends_on:    
           -  identity_service  
           -  rabbitmq  
-        #networks:
-         # services-network:
-          #  aliases:
-           # - webapi_service
-  
+          
+          
     identity_service:
         image: phrygia_identity_service
         build:
@@ -37,8 +34,8 @@ services:
           dockerfile: Dockerfile        
         container_name: identity_service
         ports:
-          - "5000:5000"
-          - "5001:5001"
+          - "5000:80"
+          - "5001:443"
         environment: 
           PIS_DB_HOST: "172.17.0.1"
           PIS_DB_PORT: "5432"
@@ -46,11 +43,9 @@ services:
           PIS_DB_PASSWORD: "IlJU7f71Vh7rM1yv"
           ASPNETCORE_ENVIRONMENT: "Development"
         depends_on:
-          -  db        
-        #networks:
-          #services-network:
-           # aliases:
-         #   - identity_service      
+          -  db     
+
+
     db:
         image: postgres:12.2-alpine
         volumes: 
@@ -62,17 +57,22 @@ services:
             PGDATA: "/var/lib/postgresql/data/pgdata"
             POSTGRES_PASSWORD: "IlJU7f71Vh7rM1yv"
             POSTGRES_USER: "postgres"
-        #networks:
-         # services-network:
-          #  aliases:
-           #   - db
+
     
     rabbitmq:
-        image: rabbitmq:3.8.3-management-alpine
+        image: rabbitmq
+        build:
+          context: ./ThirdPartyImages
+          dockerfile: RabbitMQ
         container_name: rabbitmq
         environment: 
           RABBITMQ_DEFAULT_USER: "rabbitmq"
           RABBITMQ_DEFAULT_PASS: "IlJU7f71Vh7rM1yv"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:15672"]
+          interval: 30s
+          timeout: 10s
+          retries: 5
         volumes:
             - rmq_etc:/etc/rabbitmq/
             - rmq_data:/var/lib/rabbitmq/
@@ -85,12 +85,25 @@ services:
             - "15671:15671"
             - "15672:15672"
 
+    notification_worker:
+        image: phrygia_notification_worker
+        build:
+          context: .
+          dockerfile: ./AppServices/WorkerServices/NotificationWorkerService/Dockerfile        
+        container_name: notification_worker
+        restart: on-failure
+        environment: 
+          RMQ_USER: "rabbitmq"
+          RMQ_PASSWORD: "IlJU7f71Vh7rM1yv"
+          RMQ_HOST: "172.17.0.1"
+          RMQ_PORT: "5672"
+          DOTNET_ENVIRONMENT: "Development"
+        depends_on:    
+          -  rabbitmq  
+
 volumes: 
   pg_data:
   rmq_etc:
   rmq_data:
   rmq_logs:
 
-#networks:
- # services-network:    
-  #  driver: bridge
