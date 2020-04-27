@@ -1,101 +1,87 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-using WebAPIService.Middleware;
-using WebAPIService.Models;
-using Microsoft.Extensions.DependencyInjection;
-using BusinessServices.Extensions;
-using RabbitMQ.Client;
-using Serilog;
 using System;
 using AutoMapper;
+using BusinessServices.Extensions;
 using DataAccess;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using RabbitMQ.Client;
+using Serilog;
+using WebAPIService.Middleware;
+using WebAPIService.Models;
 
-namespace WebAPIService
-{
-    public class Startup
-    {
-        private readonly string CorsPolicy=nameof(CorsPolicy);
+namespace WebAPIService {
+    public class Startup {
+        private readonly string CorsPolicy = nameof (CorsPolicy);
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
-        {
+        public Startup (IConfiguration configuration) {
             Configuration = configuration;
-            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(Configuration).CreateLogger();
+            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
         }
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
+        public void ConfigureServices (IServiceCollection services) {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings () {
                 DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(),
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver (),
                 NullValueHandling = NullValueHandling.Ignore,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             };
-            services.Configure<ApplicationOptions>(Configuration.GetSection(nameof(ApplicationOptions)));
-            
-            services.AddSwagger();
-            services.AddAuth(Configuration);
-            services.AddSQL(Configuration);
-            services.AddQueueService(Configuration);
-            services.AddAutoMapper(typeof(Startup));
-            services.AddControllers()
-                    .AddNewtonsoftJson(options =>
-                    {
-                        options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-                        options.SerializerSettings.Formatting = Formatting.Indented;
+            services.Configure<ApplicationOptions> (Configuration.GetSection (nameof (ApplicationOptions)));
 
-                    });
-            services.AddCors(options =>
-            {
-                options.AddPolicy(nameof(CorsPolicy),
-                    builder => builder.AllowAnyOrigin()  
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                .Build());
-            });                    
+            services.AddSwagger ();
+            services.AddAuth (Configuration);
+            services.AddSQL (Configuration);
+            services.AddQueueService (Configuration);
+            services.AddAutoMapper (typeof (Startup));
+            services.AddControllers ()
+                .AddNewtonsoftJson (options => {
+                    options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                    options.SerializerSettings.Formatting = Formatting.Indented;
+
+                });
+            services.AddCors (options => {
+                options.AddPolicy (nameof (CorsPolicy),
+                    builder => builder.AllowAnyOrigin ()
+                    .AllowAnyMethod ()
+                    .AllowAnyHeader ()
+                    .Build ());
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {   
-            app.UseMiddleware<RequestResponseLoggingMiddleware>();          
-            app.UseCors(nameof(CorsPolicy));
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
+        public void Configure (IApplicationBuilder app, IWebHostEnvironment env) {
+            app.UseMiddleware<RequestResponseLoggingMiddleware> ();
+            app.UseCors (nameof (CorsPolicy));
+            if (env.IsDevelopment ()) {
+                app.UseDeveloperExceptionPage ();
             }
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            app.UseSwagger ();
+            app.UseSwaggerUI (c => {
+                c.SwaggerEndpoint ("/swagger/v1/swagger.json", "My API V1");
                 c.RoutePrefix = string.Empty;
             });
 
-            app.UseRouting();
+            app.UseRouting ();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseAuthentication ();
+            app.UseAuthorization ();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
+            app.UseEndpoints (endpoints => {
+                endpoints.MapControllers ();
             });
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                    var context = serviceScope.ServiceProvider.GetRequiredService<APIContext<Guid>>();
-                    try {
-                    context.Database.EnsureCreated();
-                    context.Database.Migrate();
-                    }
-                    catch(Exception e)
-                    {
-                        Log.Warning(e.Message);
-                    }
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
+                var context = serviceScope.ServiceProvider.GetRequiredService<APIContext<Guid>> ();
+                try {
+                    context.Database.EnsureCreated ();
+                    context.Database.Migrate ();
+                } catch (Exception e) {
+                    Log.Warning (e.Message);
+                }
             }
         }
     }

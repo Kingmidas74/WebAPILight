@@ -11,16 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 using WebAPIService.Extensions;
 using WebAPIService.Models;
 
-namespace WebAPIService.Controllers
-{
-    [Route("api/[controller]")]
+namespace WebAPIService.Controllers {
+    [Route ("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ChildController:ControllerBase
-    {
+    public class ChildController : ControllerBase {
         private readonly ChildService childService;
-        public ChildController(ChildService childService)
-        {
+        public ChildController (ChildService childService) {
             this.childService = childService;
         }
 
@@ -29,10 +26,9 @@ namespace WebAPIService.Controllers
         /// </summary>
         /// <param name="getAllByParent"></param>
         /// <returns></returns>
-        [HttpGet(nameof(GetAllByParent))]
-        public IEnumerable<Child> GetAllByParent([FromQuery]GetAllByParentInputParameter getAllByParent)
-        {
-            return childService.GetAllByParent(getAllByParent.ParentId);
+        [HttpGet (nameof (GetAllByParent))]
+        public IEnumerable<Child> GetAllByParent ([FromQuery] GetAllByParentInputParameter getAllByParent) {
+            return childService.GetAllByParent (getAllByParent.ParentId);
         }
     }
 }

@@ -1,5 +1,5 @@
-using System.Collections;
 using System;
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using BusinessServices.Extensions;
 using BusinessServices.Services;
@@ -11,16 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 using WebAPIService.Extensions;
 using WebAPIService.Models;
 
-namespace WebAPIService.Controllers
-{
-    [Route("api/[controller]")]
+namespace WebAPIService.Controllers {
+    [Route ("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ParentController:ControllerBase
-    {
+    public class ParentController : ControllerBase {
         private readonly ParentService parentService;
-        public ParentController(ParentService parentService)
-        {
+        public ParentController (ParentService parentService) {
             this.parentService = parentService;
         }
 
@@ -29,11 +26,10 @@ namespace WebAPIService.Controllers
         /// </summary>
         /// <param name="queryParameter"></param>
         /// <returns></returns>
-        [HttpGet(nameof(GetAllWithPaging))]        
-        public IEnumerable GetAllWithPaging([FromQuery]GetAllSortPagedFilterInputParameter queryParameter)
-        {
-            var userId = User.ExtractIdentifier();
-            return parentService.GetAllPaged(queryParameter.Take, queryParameter.Skip, queryParameter.SortIndex,queryParameter.SortOrder);
+        [HttpGet (nameof (GetAllWithPaging))]
+        public IEnumerable GetAllWithPaging ([FromQuery] GetAllSortPagedFilterInputParameter queryParameter) {
+            var userId = User.ExtractIdentifier ();
+            return parentService.GetAllPaged (queryParameter.Take, queryParameter.Skip, queryParameter.SortIndex, queryParameter.SortOrder);
         }
 
         /// <summary>
@@ -41,10 +37,9 @@ namespace WebAPIService.Controllers
         /// </summary>
         /// <param name="parentId">Идентификатор</param>
         /// <returns></returns>
-        [HttpGet(nameof(GetById))]        
-        public Parent GetById([FromQuery, Required]Guid parentId)
-        {
-            return parentService.GetById(parentId);
+        [HttpGet (nameof (GetById))]
+        public Parent GetById ([FromQuery, Required] Guid parentId) {
+            return parentService.GetById (parentId);
         }
 
         /// <summary>
@@ -52,10 +47,9 @@ namespace WebAPIService.Controllers
         /// </summary>
         /// <param name="irreversibleDeleteParameter"></param>
         /// <returns></returns>
-        [HttpDelete(nameof(IrreversibleDelete))]
-        public void IrreversibleDelete([FromQuery]IrreversibleDeleteInputParameter irreversibleDeleteParameter)
-        {
-            parentService.RemoveById(irreversibleDeleteParameter.Id);
+        [HttpDelete (nameof (IrreversibleDelete))]
+        public void IrreversibleDelete ([FromQuery] IrreversibleDeleteInputParameter irreversibleDeleteParameter) {
+            parentService.RemoveById (irreversibleDeleteParameter.Id);
         }
     }
 }

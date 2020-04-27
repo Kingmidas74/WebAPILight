@@ -1,5 +1,4 @@
-namespace NotificationWorkerService.Enums
-{
+namespace NotificationWorkerService.Enums {
     public enum ExchangeTypes {
         direct,
         topic
