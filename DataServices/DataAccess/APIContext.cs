@@ -18,22 +18,24 @@ namespace DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {           
             modelBuilder.HasDefaultSchema(schema: SchemaName);
-            modelBuilder
-                .Entity<DataBaseEntity<T>>()
-                .Property(e => e.StatusId)
-                .HasConversion<int>();
-                
-            modelBuilder.Entity<Parent<T>>();
-                    
-            modelBuilder.Entity<Child<T>>()
-                    .Property<int>($"{nameof(Parent<T>)}{nameof(Parent<T>.Id)}");
-            modelBuilder.Entity<Child<T>>()
-                    .HasOne(c=>c.Parent)
+
+            modelBuilder.Entity<Parent<T>>(entity => {
+                entity.HasKey(x=>x.Id);
+                entity.Property(e => e.EntityStatusId)                
+                    .HasConversion<int>();
+            });
+
+            modelBuilder.Entity<Child<T>>(entity=>{
+                entity.Property<T>($"{nameof(Parent<T>)}{nameof(Parent<T>.Id)}");
+                entity.Property(e => e.EntityStatusId)                
+                    .HasConversion<int>();
+                entity.HasOne(c=>c.Parent)
                     .WithMany(c=>c.Children)
                     .HasForeignKey($"{nameof(Parent<T>)}{nameof(Parent<T>.Id)}");
+            });
             
-            modelBuilder
-                .Entity<EntityStatus>().HasData(
+            modelBuilder.Entity<EntityStatus>(entity=>{
+                entity.HasData(
                     Enum.GetValues(typeof(EntityStatusId))
                         .Cast<EntityStatusId>()
                         .Select(e => new EntityStatus()
@@ -42,6 +44,7 @@ namespace DataAccess
                             Value = e.ToString()
                         })
                 );
+            });
             base.OnModelCreating(modelBuilder);
         }
 

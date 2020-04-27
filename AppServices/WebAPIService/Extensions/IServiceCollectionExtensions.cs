@@ -29,14 +29,18 @@ namespace WebAPIService
         public static IServiceCollection AddSQL(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContextPool<APIContext<Guid>>((provider, options) =>
-            {
+            {                
+
                 options.UseNpgsql(
                             string.Format(configuration.GetConnectionString("DefaultConnection")
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_HOST))
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PORT))
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_USER))
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PASSWORD)))
-                            , providerOptions => providerOptions.EnableRetryOnFailure(3));
+                            , providerOptions =>  {
+                                providerOptions.EnableRetryOnFailure(3);
+                                providerOptions.MigrationsAssembly(nameof(DataAccess));
+                            });
                 var extension = options.Options.FindExtension<CoreOptionsExtension>();
                 if (extension != null)
                 {
