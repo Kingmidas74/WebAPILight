@@ -1,20 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using BusinessServices.Interfaces;
 using Contracts.Shared.Interfaces;
-using DataAccess.Interfaces;
+using DataAccess;
 
 namespace BusinessServices.Base {
-    public class BaseEntityService<TEntity> : IEntityService<TEntity>
+    public abstract class BaseEntityService<TEntity> : IBusinessEntityService<TEntity>
         where TEntity : class, IEntity, new () {
             
-        public virtual IList<TEntity> Find (IEntityCommand<TEntity> command) {
-                return command.Execute ();
-            }
+        protected APIContext<Guid> DbContext {get;}
+        protected IMapper Mapper { get; }
 
-            public virtual TEntity FindOne (IEntityCommand<TEntity> command) {
-                return Find (command).FirstOrDefault ();
-            }
+        public BaseEntityService(APIContext<Guid> DbContext, IMapper Mapper) 
+        {
+            this.DbContext = DbContext;
+            this.Mapper = Mapper;
         }
+        public abstract IEnumerable<TEntity> Find ();
+
+        public abstract TEntity FindOne();
+    }
 }

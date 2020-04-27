@@ -1,5 +1,7 @@
+using System;
+
 namespace Contracts.Shared.Parameters {
     public class IrreversibleDeleteInputParameter : UserInputParameter {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
     }
 }

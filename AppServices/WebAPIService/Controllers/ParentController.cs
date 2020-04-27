@@ -1,3 +1,4 @@
+using System.Collections;
 using System;
 using System.ComponentModel.DataAnnotations;
 using BusinessServices.Extensions;
@@ -29,12 +30,10 @@ namespace WebAPIService.Controllers
         /// <param name="queryParameter"></param>
         /// <returns></returns>
         [HttpGet(nameof(GetAllWithPaging))]        
-        public PagingResult<Parent> GetAllWithPaging([FromQuery]GetAllSortPagedFilterInputParameter queryParameter)
+        public IEnumerable GetAllWithPaging([FromQuery]GetAllSortPagedFilterInputParameter queryParameter)
         {
             var userId = User.ExtractIdentifier();
-            return new PagingResult<Parent>() { 
-                Entities = parentService.GetAllPaged(userId, queryParameter.Take, queryParameter.Skip, queryParameter.SortIndex, queryParameter.SortOrder, queryParameter.Filter), 
-                TotalCount = parentService.GetAllPaged(userId, filter: queryParameter.Filter).Count };
+            return parentService.GetAllPaged(queryParameter.Take, queryParameter.Skip, queryParameter.SortIndex,queryParameter.SortOrder);
         }
 
         /// <summary>
@@ -45,7 +44,7 @@ namespace WebAPIService.Controllers
         [HttpGet(nameof(GetById))]        
         public Parent GetById([FromQuery, Required]Guid parentId)
         {
-            return parentService.FindOne(User.ExtractIdentifier(), parentId);
+            return parentService.GetById(parentId);
         }
 
         /// <summary>
@@ -54,12 +53,9 @@ namespace WebAPIService.Controllers
         /// <param name="irreversibleDeleteParameter"></param>
         /// <returns></returns>
         [HttpDelete(nameof(IrreversibleDelete))]
-        public Guid IrreversibleDelete([FromQuery]IrreversibleDeleteInputParameter irreversibleDeleteParameter)
+        public void IrreversibleDelete([FromQuery]IrreversibleDeleteInputParameter irreversibleDeleteParameter)
         {
-            return parentService.Execute(new IrreversibleDeleteParameter {
-                Id = irreversibleDeleteParameter.Id,
-                UserId = User.ExtractIdentifier()
-            });
+            parentService.RemoveById(irreversibleDeleteParameter.Id);
         }
     }
 }

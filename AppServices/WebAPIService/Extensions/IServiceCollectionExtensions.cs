@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using WebAPIService.Services;
+using DataAccess;
 
 namespace WebAPIService
 {
@@ -27,19 +28,15 @@ namespace WebAPIService
     {
         public static IServiceCollection AddSQL(this IServiceCollection services, IConfiguration configuration)
         {
-            Console.WriteLine(nameof(AddSQL));
-            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_HOST)));
-            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PORT)));
-            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_USER)));
-            Console.WriteLine(System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PASSWORD)));
-            DataAccess.DataAccessPolicy.ConnectionString = string.Format(configuration.GetConnectionString("DefaultConnection")
+            services.AddDbContextPool<APIContext<Guid>>((provider, options) =>
+            {
+                options.UseNpgsql(
+                            string.Format(configuration.GetConnectionString("DefaultConnection")
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_HOST))
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PORT))
                                 , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_USER))
-                                , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PASSWORD)));
-            services.AddDbContextPool<DataAccess.DataBase>(options =>
-            {
-                options.UseNpgsql(DataAccess.DataAccessPolicy.ConnectionString);
+                                , System.Environment.GetEnvironmentVariable(nameof(EnvironmentVariables.API_DB_PASSWORD)))
+                            , providerOptions => providerOptions.EnableRetryOnFailure(3));
                 var extension = options.Options.FindExtension<CoreOptionsExtension>();
                 if (extension != null)
                 {
@@ -52,9 +49,8 @@ namespace WebAPIService
                         options.UseLoggerFactory(loggerFactory);
 #endif
                     }
-                }
+                };                
             });
-            DataAccess.DataAccessPolicy.Init(services); 
             return services;
         }
         public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)

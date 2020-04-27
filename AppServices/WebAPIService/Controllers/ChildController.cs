@@ -32,7 +32,7 @@ namespace WebAPIService.Controllers
         [HttpGet(nameof(GetAllByParent))]
         public IEnumerable<Child> GetAllByParent([FromQuery]GetAllByParentInputParameter getAllByParent)
         {
-            return childService.GetAllByParent(User.ExtractIdentifier(),getAllByParent.ParentId);
+            return childService.GetAllByParent(getAllByParent.ParentId);
         }
     }
 }

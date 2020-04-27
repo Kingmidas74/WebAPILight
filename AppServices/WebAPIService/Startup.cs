@@ -10,6 +10,9 @@ using BusinessServices.Extensions;
 using RabbitMQ.Client;
 using Serilog;
 using System;
+using AutoMapper;
+using DataAccess;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebAPIService
 {
@@ -39,6 +42,7 @@ namespace WebAPIService
             services.AddAuth(Configuration);
             services.AddSQL(Configuration);
             services.AddQueueService(Configuration);
+            services.AddAutoMapper(typeof(Startup));
             services.AddControllers()
                     .AddNewtonsoftJson(options =>
                     {
@@ -53,11 +57,7 @@ namespace WebAPIService
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                 .Build());
-            });            
-
-            
-            var provider = services.BuildServiceProvider();
-            SCE.SC= provider;           
+            });                    
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -85,6 +85,18 @@ namespace WebAPIService
             {
                 endpoints.MapControllers();
             });
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                    var context = serviceScope.ServiceProvider.GetRequiredService<APIContext<Guid>>();
+                    try {
+                    context.Database.EnsureCreated();
+                    context.Database.Migrate();
+                    }
+                    catch(Exception e)
+                    {
+                        Log.Warning(e.Message);
+                    }
+            }
         }
     }
 }

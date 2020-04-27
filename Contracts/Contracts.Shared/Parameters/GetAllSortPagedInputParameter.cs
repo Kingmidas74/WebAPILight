@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Contracts.Shared.Parameters {
     public class GetAllSortPagedInputParameter : GetSortedInputParameter {
-        public int? Take { get; set; }
+        public int Take { get; set; }
         public int Skip { get; set; }
     }
 }
