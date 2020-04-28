@@ -22,7 +22,7 @@ namespace IdentityService {
         }
 
         public void ConfigureServices (IServiceCollection services) {
-            services.Configure<ApplicationOptions> (Configuration.GetSection ("ApplicationOptions"));
+            services.Configure<ApplicationOptions> (Configuration.GetSection (nameof(ApplicationOptions)));
             services.AddScoped<AppDbContext> ();
             services.AddTransient<IUserRepository, UserRepository> ();
             services.AddDbContextPool<AppDbContext> ((serviceProvider, optionsBuilder) => {

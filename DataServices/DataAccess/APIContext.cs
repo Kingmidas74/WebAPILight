@@ -16,6 +16,17 @@ namespace DataAccess {
         protected override void OnModelCreating (ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema (schema: SchemaName);
 
+            modelBuilder.Entity<EntityStatus> (entity => {
+                entity.HasData (
+                    Enum.GetValues (typeof (EntityStatusId))
+                    .Cast<EntityStatusId> ()
+                    .Select (e => new EntityStatus () {
+                        EntityStatusId = e,
+                            Value = e.ToString ()
+                    })
+                );
+            });
+            
             modelBuilder.Entity<Parent<T>> (entity => {
                 entity.HasKey (x => x.Id);
                 entity.Property (e => e.EntityStatusId)
@@ -31,16 +42,6 @@ namespace DataAccess {
                     .HasForeignKey ($"{nameof(Parent<T>)}{nameof(Parent<T>.Id)}");
             });
 
-            modelBuilder.Entity<EntityStatus> (entity => {
-                entity.HasData (
-                    Enum.GetValues (typeof (EntityStatusId))
-                    .Cast<EntityStatusId> ()
-                    .Select (e => new EntityStatus () {
-                        EntityStatusId = e,
-                            Value = e.ToString ()
-                    })
-                );
-            });
             base.OnModelCreating (modelBuilder);
         }
 

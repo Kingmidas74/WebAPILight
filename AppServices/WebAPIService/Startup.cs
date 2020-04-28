@@ -1,6 +1,5 @@
 using System;
 using AutoMapper;
-using BusinessServices.Extensions;
 using DataAccess;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
-using RabbitMQ.Client;
 using Serilog;
 using WebAPIService.Middleware;
 using WebAPIService.Models;
@@ -75,10 +73,16 @@ namespace WebAPIService {
                 endpoints.MapControllers ();
             });
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
-                var context = serviceScope.ServiceProvider.GetRequiredService<APIContext<Guid>> ();
                 try {
-                    context.Database.EnsureCreated ();
-                    context.Database.Migrate ();
+                    var context = serviceScope.ServiceProvider.GetRequiredService<APIContext<Guid>> ();                    
+                    
+                    context.Database.EnsureCreated();
+
+                    if(!context.AllMigrationsApplied())
+                    {
+                        context.Database.Migrate();
+                    }
+                    
                 } catch (Exception e) {
                     Log.Warning (e.Message);
                 }
