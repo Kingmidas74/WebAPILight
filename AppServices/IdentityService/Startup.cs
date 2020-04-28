@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace IdentityService {
     public class Startup {
+        private readonly string CorsPolicy = nameof (CorsPolicy);
         public IWebHostEnvironment Environment { get; }
         public IConfiguration Configuration { get; }
 
@@ -37,14 +39,35 @@ namespace IdentityService {
                 .AddDeveloperSigningCredential ()
                 .AddProfileService<ProfileService> ()
                 .AddExtensionGrantValidator<PasswordValidator> ();
+            services.AddControllers()
+                .AddNewtonsoftJson (options => {
+                    options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                    options.SerializerSettings.Formatting = Formatting.Indented;
+
+                });
+
+            services.AddCors (options => {
+                options.AddPolicy (nameof (CorsPolicy),
+                    builder => builder.AllowAnyOrigin ()
+                    .AllowAnyMethod ()
+                    .AllowAnyHeader ()
+                    .Build ());
+            });
         }
 
         public void Configure (IApplicationBuilder app) {
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
-                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext> ();
+                
                 try {
-                    context.Database.EnsureCreated ();
-                    context.Database.Migrate ();
+                    var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext> ();                    
+                    
+                    context.Database.EnsureCreated();
+
+                    if(!context.AllMigrationsApplied())
+                    {
+                        context.Database.Migrate();
+                    }
+                    
                 } catch (Exception e) {
                     Log.Warning (e.Message);
                 }
@@ -53,7 +76,13 @@ namespace IdentityService {
                 app.UseDeveloperExceptionPage ();
             }
 
+            app.UseCors (nameof (CorsPolicy));
             app.UseIdentityServer ();
+
+            app.UseRouting ();
+            app.UseEndpoints (endpoints => {
+                endpoints.MapControllers ();
+            });
         }
     }
 }
