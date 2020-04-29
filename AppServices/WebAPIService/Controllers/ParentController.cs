@@ -1,55 +1,53 @@
 using System;
-using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using BusinessServices.Extensions;
-using BusinessServices.Services;
-using Contracts.Shared.Parameters;
-using Contracts.Shared.Results;
-using Domain.Parameters;
+using System.Threading.Tasks;
+using BusinessServices.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPIService.Extensions;
-using WebAPIService.Models;
+using WebAPIService.MediatR;
 
-namespace WebAPIService.Controllers {
+namespace WebAPIService.Controllers
+{
+
     [Route ("api/[controller]")]
     [ApiController]
     [Authorize]
     public class ParentController : ControllerBase {
-        private readonly ParentService parentService;
-        public ParentController (ParentService parentService) {
-            this.parentService = parentService;
+        private readonly IMediator mediator;
+        public ParentController (IMediator mediator) {            
+            this.mediator = mediator;
+        }
+
+
+        /// <summary>
+        /// Get parents
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAllParentsAsync() {
+            return Ok(await mediator.Send(new GetAllParentsQuery<Guid>()));
         }
 
         /// <summary>
-        /// Получить все сущности Parent с ограничениями по паджинации и фильтрам
+        /// Get parents by unique identifier
         /// </summary>
-        /// <param name="queryParameter"></param>
+        /// <param name="Id">Unique identifier</param>
         /// <returns></returns>
-        [HttpGet (nameof (GetAllWithPaging))]
-        public IEnumerable GetAllWithPaging ([FromQuery] GetAllSortPagedFilterInputParameter queryParameter) {
-            var userId = User.ExtractIdentifier ();
-            return parentService.GetAllPaged (queryParameter.Take, queryParameter.Skip, queryParameter.SortIndex, queryParameter.SortOrder);
+        [HttpGet("{Id}")]
+        public async Task<IActionResult> GetParentByIdAsync(Guid Id) {
+            return Ok(await mediator.Send(new GetParentByIdQuery<Guid>(Id)));
         }
 
-        /// <summary>
-        /// Получить сущность Parent по идентификатору
-        /// </summary>
-        /// <param name="parentId">Идентификатор</param>
-        /// <returns></returns>
-        [HttpGet (nameof (GetById))]
-        public Parent GetById ([FromQuery, Required] Guid parentId) {
-            return parentService.GetById (parentId);
-        }
 
         /// <summary>
-        /// Удалить данные о конкретной сущности Parent
+        /// Create parent
         /// </summary>
-        /// <param name="irreversibleDeleteParameter"></param>
+        /// <param name="parent">DTO parent model</param>
         /// <returns></returns>
-        [HttpDelete (nameof (IrreversibleDelete))]
-        public void IrreversibleDelete ([FromQuery] IrreversibleDeleteInputParameter irreversibleDeleteParameter) {
-            parentService.RemoveById (irreversibleDeleteParameter.Id);
+        [HttpPost]
+        public async Task<IActionResult> CreateParentAsync([FromBody]CreateParentCommand<Guid> parent) {
+            var result = await mediator.Send(parent);
+            return Created($"{nameof(Parent<Guid>)}/{result.Id}",result);
         }
     }
 }

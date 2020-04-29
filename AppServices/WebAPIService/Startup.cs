@@ -1,6 +1,7 @@
 using System;
 using AutoMapper;
 using DataAccess;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,9 @@ namespace WebAPIService {
             services.AddAuth (Configuration);
             services.AddSQL (Configuration);
             services.AddQueueService (Configuration);
+            services.AddServices();
             services.AddAutoMapper (typeof (Startup));
+            services.AddMediatR(typeof(Startup));
             services.AddControllers ()
                 .AddNewtonsoftJson (options => {
                     options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;

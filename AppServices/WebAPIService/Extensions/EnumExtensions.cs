@@ -1,8 +1,9 @@
 using System;
 using System.ComponentModel;
 
-namespace Contracts.Shared.Enums {
-    public static class EnumsExtensions {
+namespace WebAPIService.Extensions
+{
+    public static class EnumExtensions {
         public static string GetDescription (this Enum value) {
             var type = value.GetType ();
             string name = Enum.GetName (type, value);

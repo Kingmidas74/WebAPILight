@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using BusinessServices.Exceptions;
 using BusinessServices.Extensions;
-using Domain.Exceptions;
 
 namespace BusinessServices.Base {
     public static class Guard {
@@ -23,9 +22,9 @@ namespace BusinessServices.Base {
         public static void DontHaveDuplicates<TEntity, TProperty> (List<TEntity> list, Func<TEntity, TProperty> expression, string fieldName = null) {
             if (list.HaveDuplicates (expression)) {
                 if (fieldName != null) {
-                    throw new WebApiDomainExceptionBase ("В списке не может быть двух одинаковых записей с ключем " + fieldName);
+                    throw new BusinessException ("В списке не может быть двух одинаковых записей с ключем " + fieldName);
                 }
-                throw new WebApiDomainExceptionBase ("В списке не может быть двух одинаковых записей");
+                throw new BusinessException ("В списке не может быть двух одинаковых записей");
             }
         }
 
@@ -37,7 +36,7 @@ namespace BusinessServices.Base {
 
         public static void MaxCountRestricted<TEntity> (List<TEntity> list, int maxElements, string message = "Превышено допустимое количество элементов в списке") {
             if (list.Count > maxElements) {
-                throw new WebApiDomainExceptionBase (message);
+                throw new BusinessException (message);
             }
         }
 

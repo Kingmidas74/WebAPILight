@@ -1,10 +1,12 @@
 using System.Collections.Generic;
-using Contracts.Shared.Interfaces;
+using System.Threading.Tasks;
 
 namespace BusinessServices.Interfaces {
-    public interface IBusinessEntityService<TEntity>
-        where TEntity : class, IEntity, new () {
-            IEnumerable<TEntity> Find ();
-            TEntity FindOne ();
+    public interface IBusinessEntityService<TBusinessEntity,TKey>
+        where TBusinessEntity : class, IBusinessEntity<TKey>, new () {
+            IEnumerable<TBusinessEntity> FindAll();
+            Task<List<TBusinessEntity>> FindAllAsync();
+            TBusinessEntity FindOne (TKey Id);
+            Task<TBusinessEntity> FindOneAsync (TKey Id);
         }
 }

@@ -1,27 +1,20 @@
 using System;
 using System.IO;
 using System.Reflection;
-using BusinessServices.Extensions;
+using BusinessServices.Services;
 using DataAccess;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using RabbitMQ.Client;
-using Serilog;
-using WebAPIService.Middleware;
 using WebAPIService.Models;
 using WebAPIService.Services;
 
-namespace WebAPIService {
+namespace WebAPIService
+{
     public static class IServiceCollectionExtensions {
         public static IServiceCollection AddSQL (this IServiceCollection services, IConfiguration configuration) {
             services.AddDbContextPool<APIContext<Guid>> ((provider, options) => {
@@ -126,6 +119,12 @@ namespace WebAPIService {
         where TImplementation : class, TService {
             services.AddTransient<TService, TImplementation> ();
             services.AddSingleton<Func<TService>> (x => () => x.GetService<TService> ());
+        }
+
+        public static IServiceCollection AddServices (this IServiceCollection services) {
+            services.AddTransient<ParentService<Guid>>();
+            services.AddTransient<ChildService<Guid>>();
+            return services;
         }
     }
 }

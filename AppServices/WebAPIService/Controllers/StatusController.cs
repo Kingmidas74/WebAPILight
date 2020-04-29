@@ -1,13 +1,11 @@
-using System;
-using System.Linq;
-using System.Security.Claims;
-using Contracts.Shared.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebAPIService.Enums;
 using WebAPIService.Extensions;
 using WebAPIService.Services;
 
 namespace WebAPIService.Controllers {
+
     [Route ("api/[controller]")]
     [ApiController]
     public class StatusController : ControllerBase {

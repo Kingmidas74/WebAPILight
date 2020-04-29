@@ -1,24 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessServices.Interfaces;
-using Contracts.Shared.Interfaces;
 using DataAccess;
 
 namespace BusinessServices.Base {
-    public abstract class BaseEntityService<TEntity> : IBusinessEntityService<TEntity>
-        where TEntity : class, IEntity, new () {
+    public abstract class BaseEntityService<TEntity,TKey> : IBusinessEntityService<TEntity,TKey>
+        where TEntity : class, IBusinessEntity<TKey>, new () {
 
-            protected APIContext<Guid> DbContext { get; }
+            protected APIContext<TKey> DbContext { get; }
             protected IMapper Mapper { get; }
 
-            public BaseEntityService (APIContext<Guid> DbContext, IMapper Mapper) {
+            public BaseEntityService (APIContext<TKey> DbContext, IMapper Mapper) {
                 this.DbContext = DbContext;
                 this.Mapper = Mapper;
             }
-            public abstract IEnumerable<TEntity> Find ();
-
-            public abstract TEntity FindOne ();
-        }
+            public abstract IEnumerable<TEntity> FindAll();
+            public abstract Task<List<TEntity>> FindAllAsync();
+            public abstract TEntity FindOne (TKey Id);
+            public abstract Task<TEntity> FindOneAsync(TKey Id);
+    }
 }
