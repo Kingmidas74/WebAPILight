@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using System;
 
 namespace BusinessServices.Exceptions {
     public class BusinessException : Exception {
-        public BusinessException (string message) : base (message) {
 
+        public Dictionary<string,object> Properties = new Dictionary<string, object>();        
+        public BusinessException (Type exceptionType) : base (nameof(BusinessServices)) {            
+            Properties.Add(nameof(exceptionType),exceptionType);
         }
     }
 }

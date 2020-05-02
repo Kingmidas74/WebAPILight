@@ -8,61 +8,47 @@ using BusinessServices.Extensions;
 namespace BusinessServices.Base {
     public static class Guard {
         public static void NotNull (object value) {
-            if (value == null) {
-                throw new InvalidInputException ("Входной параметр должен иметь значение");
-            }
+            if (value != null) return;
+            throw new NullException();
         }
 
         public static void NotNull (object value, string name) {
-            if (value == null) {
-                throw new InvalidInputException ("Параметр " + name + " должен иметь значение");
-            }
+            if (value != null) return;
+            throw new NullException(name);
         }
 
         public static void DontHaveDuplicates<TEntity, TProperty> (List<TEntity> list, Func<TEntity, TProperty> expression, string fieldName = null) {
-            if (list.HaveDuplicates (expression)) {
-                if (fieldName != null) {
-                    throw new BusinessException ("В списке не может быть двух одинаковых записей с ключем " + fieldName);
-                }
-                throw new BusinessException ("В списке не может быть двух одинаковых записей");
-            }
+            if (!list.HaveDuplicates (expression)) return;
+            throw !String.IsNullOrEmpty(fieldName) 
+                ? new DuplicateException(typeof(TEntity), typeof(TProperty), list, expression, nameof(fieldName))
+                : new DuplicateException(typeof(TEntity), typeof(TProperty), list, expression);
         }
 
         public static void MaxLengthRestricted (string input, int inputLength) {
-            if (input != null && input.Length > inputLength) {
-                throw new InvalidInputException ("Значение поля не должно превышать " + inputLength + " символов");
-            }
+            if (String.IsNullOrEmpty(input) || input.Length <= inputLength) return;
+            throw new LengthException (input,inputLength);
         }
 
-        public static void MaxCountRestricted<TEntity> (List<TEntity> list, int maxElements, string message = "Превышено допустимое количество элементов в списке") {
-            if (list.Count > maxElements) {
-                throw new BusinessException (message);
-            }
+        public static void MaxCountRestricted<TEntity> (List<TEntity> list, int maxElements) {
+            if (list.Count <= maxElements) return;
+            throw new CountException (typeof(TEntity),list,maxElements,list.Count);            
         }
 
         public static void FutureDate (DateTime datetime, string name = null) {
-            if (!(datetime.Date >= DateTime.Now.Date)) {
-                if (name != null) {
-                    throw new InvalidInputException (string.Format ("{0} меньше текущей даты: {1} : {2}", name, datetime.Date, DateTime.Now.Date));
-                }
-                throw new InvalidInputException ("Дата меньше текущей даты");
-            }
+            if (datetime.Date >= DateTime.Now.Date) return;
+            throw name != null ? new FutureDateException (datetime.Date, name)
+                                : new FutureDateException (datetime.Date);            
         }
 
-        public static void ValidateExpression<TEntity> (TEntity entity, Expression<Func<TEntity, bool>> expression, string text = null) {
-            var valid = expression.Compile ().Invoke (entity);
-            if (!valid) {
-                if (text != null) {
-                    throw new InvalidInputException (text);
-                }
-                throw new InvalidInputException ("Условие " + expression.Body.ToString () + " не выполненно");
-            }
+        public static void ValidateExpression<TEntity> (TEntity entity, Expression<Func<TEntity, bool>> expression) {
+            if (expression.Compile ().Invoke (entity)) return;
+            throw new ValidateByExpressionException (typeof(TEntity), entity, expression.Body);
         }
 
-        public static void NotEmptyCollection (IEnumerable<object> value, string text = null) {
-            if (value == null || !value.Any ()) {
-                throw new InvalidInputException (text == null ? "Коллекция не может быть пустой" : string.Format ("Коллекция {0} не может быть пустой", text));
-            }
+        public static void NotEmptyCollection (IEnumerable<object> value) {
+            if (value != null && value.Any ()) return;
+            throw new NotEmptyException (value);
+            
         }
     }
 }
