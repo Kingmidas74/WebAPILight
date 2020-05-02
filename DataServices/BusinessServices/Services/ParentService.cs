@@ -9,6 +9,7 @@ using DataAccess;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.DataBaseEntities;
+using BusinessServices.Specifications;
 
 namespace BusinessServices.Services
 {
@@ -30,12 +31,16 @@ namespace BusinessServices.Services
 
         public override DTO.Parent<T> FindOne(T Id)
         {
-            return Mapper.Map<DTO.Parent<T>>(this.DbContext.Parents.SingleOrDefault(x=>x.Id.Equals(Id)));
+            return Mapper.Map<DTO.Parent<T>>(this.DbContext.Parents.SingleOrDefault(
+                    new FindByIdSpecification<Parent<T>,T>(Id).IsSatisfiedByExpression)
+                );
         }
 
         public override async Task<DTO.Parent<T>> FindOneAsync(T Id)
-        {
-            return Mapper.Map<DTO.Parent<T>>(await this.DbContext.Parents.SingleOrDefaultAsync(x=>x.Id.Equals(Id)));
+        {            
+            return Mapper.Map<DTO.Parent<T>>(await this.DbContext.Parents.SingleOrDefaultAsync(
+                    new FindByIdSpecification<Parent<T>,T>(Id).IsSatisfiedByExpression)
+                );            
         }
 
         public DTO.Parent<T> Create(DTO.Parent<T> parent)
@@ -52,8 +57,10 @@ namespace BusinessServices.Services
             return await FindOneAsync(parent.Id);
         }
 
-        public void RemoveById (Guid parentId) {
-            this.DbContext.Parents.Remove (this.DbContext.Parents.SingleOrDefault (x => x.Id.Equals (parentId)));
+        public void RemoveById (T Id) {
+            this.DbContext.Parents.Remove(
+                this.DbContext.Parents.SingleOrDefault(
+                    new FindByIdSpecification<Parent<T>,T>(Id).IsSatisfiedByExpression));
             this.DbContext.SaveChanges ();
         }
     }
