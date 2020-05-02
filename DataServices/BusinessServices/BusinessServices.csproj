@@ -5,8 +5,7 @@
   </PropertyGroup>
 
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Contracts\Contracts.Shared\Contracts.Shared.csproj" />        
+  <ItemGroup>        
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
   </ItemGroup>
 
