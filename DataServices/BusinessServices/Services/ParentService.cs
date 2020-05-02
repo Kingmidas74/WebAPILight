@@ -31,14 +31,14 @@ namespace BusinessServices.Services
 
         public override DTO.Parent<T> FindOne(T Id)
         {
-            return Mapper.Map<DTO.Parent<T>>(this.DbContext.Parents.SingleOrDefault(
+            return Mapper.Map<DTO.Parent<T>>(this.DbContext.Parents.Single(
                     new FindByIdSpecification<Parent<T>,T>(Id).IsSatisfiedByExpression)
                 );
         }
 
         public override async Task<DTO.Parent<T>> FindOneAsync(T Id)
         {            
-            return Mapper.Map<DTO.Parent<T>>(await this.DbContext.Parents.SingleOrDefaultAsync(
+            return Mapper.Map<DTO.Parent<T>>(await this.DbContext.Parents.SingleAsync(
                     new FindByIdSpecification<Parent<T>,T>(Id).IsSatisfiedByExpression)
                 );            
         }
@@ -59,7 +59,7 @@ namespace BusinessServices.Services
 
         public void RemoveById (T Id) {
             this.DbContext.Parents.Remove(
-                this.DbContext.Parents.SingleOrDefault(
+                this.DbContext.Parents.Single(
                     new FindByIdSpecification<Parent<T>,T>(Id).IsSatisfiedByExpression));
             this.DbContext.SaveChanges ();
         }
