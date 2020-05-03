@@ -6,49 +6,64 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace WebAPIService.Middleware {
 
     public class RequestResponseLoggingMiddleware {
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
+        private readonly ILogger<RequestResponseLoggingMiddleware> _logger;
 
-        public RequestResponseLoggingMiddleware (RequestDelegate next, ILoggerFactory loggerFactory) {
+        public RequestResponseLoggingMiddleware (RequestDelegate next, ILogger<RequestResponseLoggingMiddleware> logger) {
             _next = next;
-            _logger = loggerFactory.CreateLogger<RequestResponseLoggingMiddleware> ();
+            _logger = logger;
         }
 
         public async Task Invoke (HttpContext context) {            
-
-            var request = await FormatRequest (context.Request, Guid.NewGuid());
-            var originalBodyStream = context.Response.Body;
-            
-            using (var responseBody = new MemoryStream ()) {
-                context.Response.Body = responseBody;
-
-                await _next (context);
-
-                request.Response = context.Response.StatusCode switch 
-                {
-                    var n when(n>=500) => await FormatServerErrorResponse(context.Response),
-                    var n when(n>=400 && n<500) => await FormatClientErrorResponse(context.Response),                        
-                    _ => await FormatSuccessResponse(context.Response)                        
-                };               
+            if(!context.Request.Path.Value.Contains("api")) {
+                await _next(context);
+                return;
+            }
+            var scopeId = Guid.NewGuid();
+            using (_logger.BeginScope(new Dictionary<string, object>{
+                                                { nameof(scopeId), scopeId }
+                                    }
+                )
+            ) 
+            {
+                var request = await FormatRequest (context.Request, scopeId);
+                var originalBodyStream = context.Response.Body;
                 
-                switch (request.Response)
-                {
-                    case WebAPIClientErrorResponse r: 
-                        _logger.LogError("{@request}", request); 
-                        break;
-                    case WebAPIServerErrorResponse r: 
-                        _logger.LogWarning("{@request}", request); 
-                        break;
-                    default: 
-                        _logger.LogInformation("{@request}", request);
-                        break;
-                };
+                using (var responseBody = new MemoryStream ()) {
+                    context.Response.Body = responseBody;
 
-                await responseBody.CopyToAsync (originalBodyStream);
+                    var timer = new Stopwatch();
+                    timer.Start();
+                    await _next (context);
+                    timer.Stop();
+                    request.Elapsed = timer.Elapsed.Milliseconds;
+                    request.Response = context.Response.StatusCode switch 
+                    {
+                        var n when(n>=500) => await FormatServerErrorResponse(context.Response),
+                        var n when(n>=400 && n<500) => await FormatClientErrorResponse(context.Response),                        
+                        _ => await FormatSuccessResponse(context.Response)                        
+                    };               
+                    
+                    switch (request.Response)
+                    {
+                        case WebAPIClientErrorResponse r: 
+                            _logger.LogError("{@request}", request); 
+                            break;
+                        case WebAPIServerErrorResponse r: 
+                            _logger.LogWarning("{@request}", request); 
+                            break;
+                        default: 
+                            _logger.LogInformation("{@request}", request);
+                            break;
+                    };
+                
+                    await responseBody.CopyToAsync (originalBodyStream);
+                }
             }
         }
 

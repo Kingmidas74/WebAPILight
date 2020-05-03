@@ -16,5 +16,6 @@ namespace WebAPIService.Middleware
         public Dictionary<string, object> Body { get; internal set; }
         public WebAPIResponse Response { get; internal set; }
         public Guid Id { get; internal set; }
+        public int Elapsed { get; internal set; }
     }
 }

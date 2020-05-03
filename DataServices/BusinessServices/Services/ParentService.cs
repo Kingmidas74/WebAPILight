@@ -10,10 +10,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.DataBaseEntities;
 using BusinessServices.Specifications;
+using BusinessServices.Interfaces;
 
 namespace BusinessServices.Services
 {
-    public class ParentService<T> : BaseEntityService<DTO.Parent<T>,T> {
+    public class ParentService<T> : BaseEntityService<DTO.Parent<T>,T>, IParentService<T> {
 
         public ParentService (APIContext<T> DbContext, IMapper Mapper) : base (DbContext, Mapper) {
 
