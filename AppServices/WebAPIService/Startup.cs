@@ -1,6 +1,7 @@
 using System;
 using AutoMapper;
 using DataAccess;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Serilog;
+using WebAPIService.MediatR;
 using WebAPIService.Middleware;
 using WebAPIService.Models;
 
@@ -39,6 +41,8 @@ namespace WebAPIService {
             services.AddServices();
             services.AddAutoMapper (typeof (Startup));
             services.AddMediatR(typeof(Startup));
+            services.AddValidatorsFromAssembly(typeof(Startup).Assembly);            
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddControllers ()
                 .AddNewtonsoftJson (options => {
                     options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
@@ -57,9 +61,8 @@ namespace WebAPIService {
         public void Configure (IApplicationBuilder app, IWebHostEnvironment env) {
             app.UseMiddleware<RequestResponseLoggingMiddleware> ();
             app.UseCors (nameof (CorsPolicy));
-            if (env.IsDevelopment ()) {
-                app.UseDeveloperExceptionPage ();
-            }
+            
+            app.UseCustomExceptionHandler();
 
             app.UseSwagger ();
             app.UseSwaggerUI (c => {
