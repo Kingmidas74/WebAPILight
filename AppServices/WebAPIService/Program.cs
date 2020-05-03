@@ -16,16 +16,13 @@ namespace WebAPIService {
                 BuildWebHost (args).Run ();
                 return 0;
             } catch (Exception ex) {
-                Console.WriteLine ($"Host terminated unexpectedly. {ex.Message}");
+                Log.Fatal(ex,$"Host terminated unexpectedly. {ex.Message}");
                 return 1;
             } finally {
                 Log.CloseAndFlush ();
             }
         }
-
-        public static IWebHostBuilder CreateWebHostBuilder (string[] args) =>
-            WebHost.CreateDefaultBuilder (args)
-            .UseStartup<Startup> ();
+        
 
         public static IWebHost BuildWebHost (string[] args) =>
             WebHost

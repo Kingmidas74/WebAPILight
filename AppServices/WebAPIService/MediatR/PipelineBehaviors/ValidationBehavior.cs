@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using MediatR;
+using WebAPIService.Exceptions;
 
 namespace WebAPIService.MediatR
 {
@@ -27,10 +28,9 @@ namespace WebAPIService.MediatR
                 .Where(x=>x!=null)
                 .ToList();
 
-            if(failures.Any())
-            {
-                throw new ValidationException(failures);
-            }
+            if(failures.Any()) 
+                throw new ClientValidationException(new ValidationException(failures));
+
             return next();
         }
     }

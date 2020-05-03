@@ -38,13 +38,13 @@ namespace WebAPIService.Middleware {
                 switch (request.Response)
                 {
                     case WebAPIClientErrorResponse r: 
-                        _logger.LogError(nameof(WebAPIClientErrorResponse)+"{request}", request); 
+                        _logger.LogError("{@request}", request); 
                         break;
                     case WebAPIServerErrorResponse r: 
-                        _logger.LogWarning(nameof(WebAPIServerErrorResponse)+"{request}", request); 
+                        _logger.LogWarning("{@request}", request); 
                         break;
                     default: 
-                        _logger.LogInformation(nameof(WebAPISuccessResponse)+"{request}", request);
+                        _logger.LogInformation("{@request}", request);
                         break;
                 };
 
@@ -80,7 +80,7 @@ namespace WebAPIService.Middleware {
             if (response.ContentLength == null) {
                 response.Body.Seek (0, SeekOrigin.Begin);
                 var text = await new StreamReader (response.Body).ReadToEndAsync ();
-                if(!String.IsNullOrEmpty(text)) result.Body = text;
+                if(!String.IsNullOrEmpty(text)) result.Body = JsonConvert.DeserializeObject<Dictionary<string,object>>(text);
             }
             response.Body.Seek (0, SeekOrigin.Begin);
             return result;
@@ -89,8 +89,8 @@ namespace WebAPIService.Middleware {
         private async Task<WebAPIResponse> FormatClientErrorResponse (HttpResponse response) {
             var result = new WebAPIClientErrorResponse();
             response.Body.Seek (0, SeekOrigin.Begin);
-            var text = await new StreamReader (response.Body).ReadToEndAsync ();            
-            if(!String.IsNullOrEmpty(text)) result.Body = text;
+            var text = await new StreamReader (response.Body).ReadToEndAsync ();        
+            if(!String.IsNullOrEmpty(text)) result.Body = JsonConvert.DeserializeObject<Dictionary<string,object>>(text);
             response.Body.Seek (0, SeekOrigin.Begin);
             return result;
         }
@@ -99,7 +99,7 @@ namespace WebAPIService.Middleware {
             var result = new WebAPIServerErrorResponse();
             response.Body.Seek (0, SeekOrigin.Begin);
             var text = await new StreamReader (response.Body).ReadToEndAsync ();
-            if(!String.IsNullOrEmpty(text)) result.Body = text;
+            if(!String.IsNullOrEmpty(text)) result.Body = JsonConvert.DeserializeObject<Dictionary<string,object>>(text);
             response.Body.Seek (0, SeekOrigin.Begin);
             return result;
         }

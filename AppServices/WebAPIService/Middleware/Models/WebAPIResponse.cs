@@ -1,7 +1,9 @@
+using System.Collections.Generic;
+
 namespace WebAPIService.Middleware
 {
     public abstract class WebAPIResponse
     {
-        public string Body { get; internal set; }
+        public Dictionary<string,object> Body { get; internal set; } = new Dictionary<string, object>();
     }
 }
