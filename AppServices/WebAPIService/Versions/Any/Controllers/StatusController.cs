@@ -4,10 +4,11 @@ using WebAPIService.Extensions;
 using MessageBusServices;
 using Domain.Extensions;
 
-namespace WebAPIService.Controllers {
+namespace WebAPIService.Versions.ANY.Controllers {
 
     [Route ("api/[controller]")]
     [ApiController]
+    [ApiVersionNeutral]
     public class StatusController : ControllerBase {
         private MessageProducerService MessageService;
         public StatusController (MessageProducerService messageService) {
@@ -20,8 +21,10 @@ namespace WebAPIService.Controllers {
         /// <returns></returns>
         [HttpGet (nameof (GetFreeStatus))]
         public IActionResult GetFreeStatus () {
-            MessageService.Enqueue (nameof (GetFreeStatus), MessageBusEvents.UserNotificationEvent.GetDescription ());
-            return Ok ();
+            //MessageService.Enqueue (nameof (GetFreeStatus), MessageBusEvents.UserNotificationEvent.GetDescription ());
+            return Ok (new {
+                result=1
+            });
         }
 
         /// <summary>
@@ -32,7 +35,7 @@ namespace WebAPIService.Controllers {
         [Authorize]
         public IActionResult GetPrivateStatus () {
             var userId = User.ExtractIdentifier ();
-            MessageService.Enqueue ($"{nameof(GetFreeStatus)} by user {userId}", MessageBusEvents.UserNotificationEvent.GetDescription () + ".test");
+            //MessageService.Enqueue ($"{nameof(GetFreeStatus)} by user {userId}", MessageBusEvents.UserNotificationEvent.GetDescription () + ".test");
             return Ok (userId);
         }
     }

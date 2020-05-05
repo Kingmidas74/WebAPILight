@@ -2,10 +2,10 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebAPIService.Controllers
+namespace WebAPIService.Versions.V01.Controllers
 {
 
-    [Route ("api/[controller]")]
+    [Route ("api/{version:apiVersion}/[controller]")]
     [ApiController]
     [Authorize]
     public class ChildController : ControllerBase {

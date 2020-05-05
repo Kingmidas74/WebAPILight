@@ -4,7 +4,6 @@ using BusinessServices;
 using DataAccess;
 using DataAccess.Extensions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +13,10 @@ using Serilog;
 using WebAPIService.Middleware;
 using WebAPIService.Models;
 using MessageBusServices;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-namespace WebAPIService {
+namespace WebAPIService
+{
     public class Startup {
         private readonly string CorsPolicy = nameof (CorsPolicy);
         public IConfiguration Configuration { get; }
@@ -44,13 +45,12 @@ namespace WebAPIService {
             Configuration.GetSection (nameof (WebAPIService.Models.ApplicationOptions)).Bind (applicationOptions);            
             
             services.AddSwagger ();
-            services.AddAuth (applicationOptions.IdentityServiceURI);
+            services.AddAuth (applicationOptions.IdentityServiceURI);            
             services.AddSQL (Configuration.GetConnectionString ("DefaultConnection"));
             services.AddQueueService (applicationOptions.RabbitMQSeriveURI);
             services.AddBusinessServices();
             services.AddAutoMapper (typeof (Startup));
-            
-            
+
             services.AddControllers ()
                 .AddNewtonsoftJson (options => {
                     options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
@@ -66,7 +66,7 @@ namespace WebAPIService {
             });
         }
 
-        public void Configure (IApplicationBuilder app, IWebHostEnvironment env) {
+        public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
             app.UseMiddleware<RequestResponseLoggingMiddleware> ();
             app.UseCors (nameof (CorsPolicy));
             
@@ -74,8 +74,12 @@ namespace WebAPIService {
 
             app.UseSwagger ();
             app.UseSwaggerUI (c => {
-                c.SwaggerEndpoint ("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                foreach ( var description in provider.ApiVersionDescriptions )
+                {
+                    c.SwaggerEndpoint ($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                    c.RoutePrefix = string.Empty;                    
+                }
+                
             });
 
             app.UseRouting ();
