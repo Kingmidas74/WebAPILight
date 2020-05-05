@@ -59,7 +59,7 @@ namespace DataAccess {
             foreach (var entry in entries) {
                 if (entry.State == EntityState.Added) {
                     ((IEntity) entry.Entity).CreatedDate = DateTime.UtcNow;
-                    //((IEntity) entry.Entity).EntityStatusId = EntityStatusId.Active;
+                    ((IEntity) entry.Entity).Status = EntityStatusId.Active;
                 }
                 ((IEntity) entry.Entity).ModifiedDate = DateTime.UtcNow;
             }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Domain
 {
@@ -8,6 +9,6 @@ namespace Domain
         public string SecondName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDay { get; set; }
-        public virtual IEnumerable<Child> Children { get; set; }
+        public virtual IEnumerable<Child> Children { get; set; } = Enumerable.Empty<Child>();
     }
 }

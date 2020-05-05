@@ -19,13 +19,13 @@ namespace WebAPIService
                 x.Run(async context => {
                     var errorFeature = context.Features.Get<IExceptionHandlerFeature>();
                     var exception = errorFeature.Error;
-                    string content= exception switch {
-                        ClientValidationException e when exception is ClientValidationException => JsonConvert.SerializeObject(e.Messages),
-                        _ => JsonConvert.SerializeObject(new Dictionary<string,object> {
-                                {nameof(Exception),exception.Message}
-                            })
+                    (string content, int code) = exception switch {
+                        ClientValidationException e when exception is ClientValidationException => (JsonConvert.SerializeObject(e.Messages), StatusCodes.Status400BadRequest),
+                        _ => (JsonConvert.SerializeObject(new Dictionary<string,object> {
+                                {"Processing error","Contact to tech support"}
+                            }), StatusCodes.Status500InternalServerError)
                     };
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    context.Response.StatusCode=code;
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(content, Encoding.UTF8);
                 });

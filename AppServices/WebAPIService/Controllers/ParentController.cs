@@ -42,12 +42,23 @@ namespace WebAPIService.Controllers
         /// <summary>
         /// Create parent
         /// </summary>
-        /// <param name="parent">DTO parent model</param>
+        /// <param name="createParentCommang">DTO parent model</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateParentAsync([FromBody]CreateParentCommand parent) {
-            var result = await mediator.Send(parent);
+        public async Task<IActionResult> CreateParentAsync([FromBody]CreateParentCommand createParentCommang) {
+            var result = await mediator.Send(createParentCommang);
             return Created($"{nameof(Parent)}/{result.Id}",result);
+        }
+
+        /// <summary>
+        /// Remove parent
+        /// </summary>
+        /// <param name="removeParentCommand">DTO parent model</param>
+        /// <returns></returns>
+        [HttpDelete]
+        public async Task<IActionResult> RemoveParentAsync([FromBody]RemoveParentCommand removeParentCommand) {
+            await mediator.Send(removeParentCommand);
+            return Ok();
         }
     }
 }

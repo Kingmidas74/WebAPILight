@@ -1,6 +1,7 @@
 
 
 using BusinessServices.MediatR;
+using BusinessServices.MediatR.PipelineBehaviors;
 using BusinessServices.Services;
 using FluentValidation;
 using MediatR;
@@ -17,6 +18,7 @@ namespace BusinessServices
             services.AddMediatR(typeof(DependencyInjection));
             services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);    
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
             return services;
         }
     }    

@@ -42,25 +42,32 @@ namespace BusinessServices.Services
                     new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression);            
         }
 
-        public Parent Create(Parent parent)
+        public override Parent Create(Parent parent)
         {
             DbContext.Parents.Add(parent);
             DbContext.SaveChanges();
             return FindOne(parent.Id);
         }
 
-        public async Task<Parent> CreateAsync(Parent parent)
+        public override async Task<Parent> CreateAsync(Parent parent)
         {
             await DbContext.Parents.AddAsync(parent);
             await DbContext.SaveChangesAsync();            
             return await FindOneAsync(parent.Id);
         }
 
-        public void RemoveById (Guid Id) {
+        public override void RemoveById (Guid Id) {
             this.DbContext.Parents.Remove(
                 this.DbContext.Parents.Single(
                     new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression));
             this.DbContext.SaveChanges ();
+        }
+
+        public override async Task RemoveByIdAsync (Guid Id) {            
+            this.DbContext.Parents.Remove(
+                await this.DbContext.Parents.SingleAsync(
+                    new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression));
+            await this.DbContext.SaveChangesAsync ();
         }
     }
 }
