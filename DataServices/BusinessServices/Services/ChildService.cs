@@ -2,50 +2,49 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BusinessServices.Base;
-using DTO = BusinessServices.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using DataAccess;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using DataAccess.DataBaseEntities;
+using Domain;
 
 namespace BusinessServices.Services {
-    public class ChildService<T> : BaseEntityService<DTO.Child<T>,T> {
+    public class ChildService : BaseEntityService<Child> {
 
-        public ChildService (APIContext<T> DbContext, IMapper Mapper) : base (DbContext, Mapper) {
+        public ChildService (IAPIContext DbContext, IMapper Mapper) : base (DbContext, Mapper) {
 
         }
-        public override IEnumerable<DTO.Child<T>> FindAll()
+        public override IEnumerable<Child> FindAll()
         {
-            return this.DbContext.Children.ProjectTo<DTO.Child<T>> (Mapper.ConfigurationProvider);
+            return this.DbContext.Children.ProjectTo<Child> (Mapper.ConfigurationProvider);
         }
 
-        public override async Task<List<DTO.Child<T>>> FindAllAsync()
+        public override async Task<List<Child>> FindAllAsync()
         {
-            return await this.DbContext.Children.ProjectTo<DTO.Child<T>> (Mapper.ConfigurationProvider).ToListAsync();
+            return await this.DbContext.Children.ProjectTo<Child> (Mapper.ConfigurationProvider).ToListAsync();
         }
 
-        public override DTO.Child<T> FindOne(T Id)
+        public override Child FindOne(Guid Id)
         {
-            return Mapper.Map<DTO.Child<T>>(this.DbContext.Children.SingleOrDefault(x=>x.Id.Equals(Id)));
+            return Mapper.Map<Child>(this.DbContext.Children.SingleOrDefault(x=>x.Id.Equals(Id)));
         }
 
-        public override async Task<DTO.Child<T>> FindOneAsync(T Id)
+        public override async Task<Child> FindOneAsync(Guid Id)
         {
-            return Mapper.Map<DTO.Child<T>>(await this.DbContext.Children.SingleOrDefaultAsync(x=>x.Id.Equals(Id)));
+            return Mapper.Map<Child>(await this.DbContext.Children.SingleOrDefaultAsync(x=>x.Id.Equals(Id)));
         }
 
-        public DTO.Child<T> Create(DTO.Child<T> child)
+        public Child Create(Child child)
         {
-            var result = Mapper.Map<DTO.Child<T>>(DbContext.Children.Add(Mapper.Map<Child<T>>(child)));
+            var result = Mapper.Map<Child>(DbContext.Children.Add(Mapper.Map<Child>(child)));
             DbContext.SaveChanges();
             return result;
         }
 
-        public async Task<DTO.Child<T>> CreateAsync(DTO.Child<T> child)
+        public async Task<Child> CreateAsync(Child child)
         {
-            var result =  Mapper.Map<DTO.Child<T>>(await DbContext.Children.AddAsync(Mapper.Map<Child<T>>(child)));
+            var result =  Mapper.Map<Child>(await DbContext.Children.AddAsync(Mapper.Map<Child>(child)));
             await DbContext.SaveChangesAsync();
             return result;
         }

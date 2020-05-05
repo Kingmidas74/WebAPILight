@@ -13,13 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="FluentLogger" Version="3.0.0.30">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="8.6.2" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
-    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
@@ -39,6 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DataServices\BusinessServices\BusinessServices.csproj" />
     <ProjectReference Include="..\..\DataServices\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\..\DataServices\MessageBusServices\MessageBusServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using BusinessServices.Models;
+using BusinessServices.MediatR;
+using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPIService.MediatR;
 
 namespace WebAPIService.Controllers
 {
@@ -25,7 +25,7 @@ namespace WebAPIService.Controllers
         /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> GetAllParentsAsync() {
-            return Ok(await mediator.Send(new GetAllParentsQuery<Guid>()));
+            return Ok(await mediator.Send(new GetAllParentsQuery()));
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace WebAPIService.Controllers
         /// <returns></returns>
         [HttpGet("{Id}")]
         public async Task<IActionResult> GetParentByIdAsync(Guid Id) {
-            return Ok(await mediator.Send(new GetParentByIdQuery<Guid>(Id)));
+            return Ok(await mediator.Send(new GetParentByIdQuery(Id)));
         }
 
 
@@ -45,9 +45,9 @@ namespace WebAPIService.Controllers
         /// <param name="parent">DTO parent model</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateParentAsync([FromBody]CreateParentCommand<Guid> parent) {
+        public async Task<IActionResult> CreateParentAsync([FromBody]CreateParentCommand parent) {
             var result = await mediator.Send(parent);
-            return Created($"{nameof(Parent<Guid>)}/{result.Id}",result);
+            return Created($"{nameof(Parent)}/{result.Id}",result);
         }
     }
 }

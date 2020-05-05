@@ -1,49 +1,17 @@
 using System;
 using System.IO;
 using System.Reflection;
-using BusinessServices.Services;
-using DataAccess;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using RabbitMQ.Client;
-using WebAPIService.Models;
-using WebAPIService.Services;
 
 namespace WebAPIService
 {
     public static class IServiceCollectionExtensions {
-        public static IServiceCollection AddSQL (this IServiceCollection services, IConfiguration configuration) {
-            services.AddDbContextPool<APIContext<Guid>> ((provider, options) => {
-
-                options.UseNpgsql (
-                    string.Format (configuration.GetConnectionString ("DefaultConnection"), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.API_DB_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.API_DB_PORT)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.API_DB_USER)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.API_DB_PASSWORD))), providerOptions => {
-                        providerOptions.EnableRetryOnFailure (3);
-                        providerOptions.MigrationsAssembly (nameof (DataAccess));
-                    });
-                var extension = options.Options.FindExtension<CoreOptionsExtension> ();
-                if (extension != null) {
-                    var loggerFactory = extension.ApplicationServiceProvider.GetService<ILoggerFactory> ();
-                    if (loggerFactory != null) {
-#if DEBUG
-                        options.EnableSensitiveDataLogging ().UseLoggerFactory (loggerFactory);
-#else
-                        options.UseLoggerFactory (loggerFactory);
-#endif
-                    }
-                };
-            });
-            return services;
-        }
-        public static IServiceCollection AddAuth (this IServiceCollection services, IConfiguration configuration) {
-            Console.WriteLine (nameof (AddAuth));
-            var applicationOptions = new ApplicationOptions ();
-            configuration.GetSection (nameof (ApplicationOptions)).Bind (applicationOptions);
-            Console.WriteLine (applicationOptions.IdentityServiceURI);
-            var identityServerURI = string.Format (applicationOptions.IdentityServiceURI, System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_PORT)));
+        
+        public static IServiceCollection AddAuth (this IServiceCollection services, string connectionString) {            
+            var identityServerURI = string.Format (connectionString, 
+                            System.Environment.GetEnvironmentVariable (nameof (WebAPIService.Models.EnvironmentVariables.PIS_HOST)), 
+                            System.Environment.GetEnvironmentVariable (nameof (WebAPIService.Models.EnvironmentVariables.PIS_PORT)));
             services.AddAuthentication ("Bearer")
                 .AddJwtBearer ("Bearer", options => {
                     options.Authority = identityServerURI;
@@ -94,36 +62,6 @@ namespace WebAPIService
                 var xmlPath = Path.Combine (AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments (xmlPath);
             });
-            return services;
-        }
-
-        public static IServiceCollection AddQueueService (this IServiceCollection services, IConfiguration configuration) {
-            var applicationOptions = new ApplicationOptions ();
-            configuration.GetSection (nameof (ApplicationOptions)).Bind (applicationOptions);
-            Console.WriteLine (applicationOptions.RabbitMQSeriveURI);
-            var rabbitMQSeriveURI = string.Format (applicationOptions.RabbitMQSeriveURI, System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_USER)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PASSWORD)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PORT)));
-
-            services.AddTransient<MessageService> (s => {
-                var factory = new ConnectionFactory {
-                Uri = new Uri (rabbitMQSeriveURI)
-                };
-                var connection = factory.CreateConnection ();
-                var channel = connection.CreateModel ();
-                return new MessageService (channel);
-            });
-            return services;
-        }
-
-        public static void AddFactory<TService, TImplementation> (this IServiceCollection services)
-        where TService : class
-        where TImplementation : class, TService {
-            services.AddTransient<TService, TImplementation> ();
-            services.AddSingleton<Func<TService>> (x => () => x.GetService<TService> ());
-        }
-
-        public static IServiceCollection AddServices (this IServiceCollection services) {
-            services.AddTransient<ParentService<Guid>>();
-            services.AddTransient<ChildService<Guid>>();
             return services;
         }
     }

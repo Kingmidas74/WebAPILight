@@ -1,19 +1,19 @@
 using System;
 using AutoMapper;
+using BusinessServices;
 using DataAccess;
-using FluentValidation;
-using MediatR;
+using DataAccess.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Serilog;
-using WebAPIService.MediatR;
 using WebAPIService.Middleware;
 using WebAPIService.Models;
+using MessageBusServices;
 
 namespace WebAPIService {
     public class Startup {
@@ -25,29 +25,37 @@ namespace WebAPIService {
             Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
         }
 
-        public void ConfigureServices (IServiceCollection services) {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings () {
+        private JsonSerializerSettings ConfigureJSON() {
+            var result = new JsonSerializerSettings () {
                 DateFormatHandling = DateFormatHandling.IsoDateFormat,
                 ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver (),
                 NullValueHandling = NullValueHandling.Ignore,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore                
             };
-            services.Configure<ApplicationOptions> (Configuration.GetSection (nameof (ApplicationOptions)));
+            result.Converters.Add(new StringEnumConverter());
+            return result;
+        }
 
+        public void ConfigureServices (IServiceCollection services) {
+            JsonConvert.DefaultSettings = ConfigureJSON;
+            services.Configure<ApplicationOptions> (Configuration.GetSection (nameof (ApplicationOptions)));
+            
+            var applicationOptions = new WebAPIService.Models.ApplicationOptions ();
+            Configuration.GetSection (nameof (WebAPIService.Models.ApplicationOptions)).Bind (applicationOptions);            
+            
             services.AddSwagger ();
-            services.AddAuth (Configuration);
-            services.AddSQL (Configuration);
-            services.AddQueueService (Configuration);
-            services.AddServices();
+            services.AddAuth (applicationOptions.IdentityServiceURI);
+            services.AddSQL (Configuration.GetConnectionString ("DefaultConnection"));
+            services.AddQueueService (applicationOptions.RabbitMQSeriveURI);
+            services.AddBusinessServices();
             services.AddAutoMapper (typeof (Startup));
-            services.AddMediatR(typeof(Startup));
-            services.AddValidatorsFromAssembly(typeof(Startup).Assembly);            
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            
+            
             services.AddControllers ()
                 .AddNewtonsoftJson (options => {
                     options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                     options.SerializerSettings.Formatting = Formatting.Indented;
-
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
             services.AddCors (options => {
                 options.AddPolicy (nameof (CorsPolicy),
@@ -80,7 +88,7 @@ namespace WebAPIService {
             });
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
                 try {
-                    var context = serviceScope.ServiceProvider.GetRequiredService<APIContext<Guid>> ();                    
+                    var context = serviceScope.ServiceProvider.GetRequiredService<APIContext> ();                    
                     
                     context.Database.EnsureCreated();
 

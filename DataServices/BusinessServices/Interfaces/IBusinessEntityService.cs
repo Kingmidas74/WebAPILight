@@ -1,12 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BusinessServices.Interfaces {
-    public interface IBusinessEntityService<TBusinessEntity,TKey>
-        where TBusinessEntity : class, IBusinessEntity<TKey>, new () {
+    public interface IBusinessEntityService<TBusinessEntity>
+        where TBusinessEntity : class, new () {
             IEnumerable<TBusinessEntity> FindAll();
             Task<List<TBusinessEntity>> FindAllAsync();
-            TBusinessEntity FindOne (TKey Id);
-            Task<TBusinessEntity> FindOneAsync (TKey Id);
+            TBusinessEntity FindOne (Guid Id);
+            Task<TBusinessEntity> FindOneAsync (Guid Id);
         }
 }

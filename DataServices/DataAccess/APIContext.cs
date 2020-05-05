@@ -1,17 +1,16 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using DataAccess.DataBaseEntities;
-using DataAccess.Enums;
+using Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess {
-    public class APIContext<T> : DbContext {
+    public class APIContext : DbContext,IAPIContext {
         private string SchemaName { get; set; } = "public";
 
-        public DbSet<Parent<T>> Parents { get; set; }
-        public DbSet<Child<T>> Children { get; set; }
-        public APIContext (DbContextOptions<APIContext<T>> options) : base (options) { }
+        public DbSet<Parent> Parents { get; set; }
+        public DbSet<Child> Children { get; set; }
+        public APIContext (DbContextOptions<APIContext> options) : base (options) { }
 
         protected override void OnModelCreating (ModelBuilder modelBuilder) {
             modelBuilder.HasDefaultSchema (schema: SchemaName);
@@ -27,19 +26,19 @@ namespace DataAccess {
                 );
             });
             
-            modelBuilder.Entity<Parent<T>> (entity => {
+            modelBuilder.Entity<Parent> (entity => {
                 entity.HasKey (x => x.Id);
-                entity.Property (e => e.EntityStatusId)
+                entity.Property (e => e.Status)
                     .HasConversion<int> ();
             });
 
-            modelBuilder.Entity<Child<T>> (entity => {
-                entity.Property<T> ($"{nameof(Parent<T>)}{nameof(Parent<T>.Id)}");
-                entity.Property (e => e.EntityStatusId)
+            modelBuilder.Entity<Child> (entity => {
+                entity.Property ($"{nameof(Parent)}{nameof(Parent.Id)}");
+                entity.Property (e => e.Status)
                     .HasConversion<int> ();
                 entity.HasOne (c => c.Parent)
                     .WithMany (c => c.Children)
-                    .HasForeignKey ($"{nameof(Parent<T>)}{nameof(Parent<T>.Id)}");
+                    .HasForeignKey ($"{nameof(Parent)}{nameof(Parent.Id)}");
             });
 
             base.OnModelCreating (modelBuilder);
@@ -56,13 +55,13 @@ namespace DataAccess {
         }
 
         private void AddAuitInfo () {
-            var entries = ChangeTracker.Entries ().Where (x => x.Entity is DataBaseEntity<T> && (x.State == EntityState.Added || x.State == EntityState.Modified));
+            var entries = ChangeTracker.Entries ().Where (x => x.Entity is IEntity && (x.State == EntityState.Added || x.State == EntityState.Modified));
             foreach (var entry in entries) {
                 if (entry.State == EntityState.Added) {
-                    ((DataBaseEntity<T>) entry.Entity).CreatedDate = DateTime.UtcNow;
-                    ((DataBaseEntity<T>) entry.Entity).EntityStatusId = EntityStatusId.Active;
+                    ((IEntity) entry.Entity).CreatedDate = DateTime.UtcNow;
+                    //((IEntity) entry.Entity).EntityStatusId = EntityStatusId.Active;
                 }
-                ((DataBaseEntity<T>) entry.Entity).ModifiedDate = DateTime.UtcNow;
+                ((IEntity) entry.Entity).ModifiedDate = DateTime.UtcNow;
             }
         }
     }

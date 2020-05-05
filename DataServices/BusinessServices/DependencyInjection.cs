@@ -1,0 +1,23 @@
+
+
+using BusinessServices.MediatR;
+using BusinessServices.Services;
+using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace BusinessServices
+{
+    public static class DependencyInjection
+    {
+        public static IServiceCollection AddBusinessServices(this IServiceCollection services)
+        {
+            services.AddTransient<ParentService>();
+            services.AddTransient<ChildService>();
+            services.AddMediatR(typeof(DependencyInjection));
+            services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);    
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            return services;
+        }
+    }    
+}

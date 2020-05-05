@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NotificationWorkerService.Enums;
 using NotificationWorkerService.Models;
 using RabbitMQ.Client;
 using Serilog;
@@ -46,7 +45,6 @@ namespace NotificationWorkerService {
                 IConfiguration configuration = hostContext.Configuration;
                 var rabbitMQSettings = new RabbitMQSettings ();
                 configuration.GetSection (nameof (RabbitMQSettings)).Bind (rabbitMQSettings);
-                Console.WriteLine ($"HERE {rabbitMQSettings.RabbitMQSeriveURI}");
                 var rabbitMQSeriveURI = string.Format (rabbitMQSettings.RabbitMQSeriveURI, System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_USER)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PASSWORD)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PORT)));
 
                 services.AddTransient<MessageService> (s => {

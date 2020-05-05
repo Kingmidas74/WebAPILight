@@ -6,19 +6,19 @@ using BusinessServices.Interfaces;
 using DataAccess;
 
 namespace BusinessServices.Base {
-    public abstract class BaseEntityService<TEntity,TKey> : IBusinessEntityService<TEntity,TKey>
-        where TEntity : class, IBusinessEntity<TKey>, new () {
+    public abstract class BaseEntityService<TEntity> : IBusinessEntityService<TEntity>
+        where TEntity : class, new () {
 
-            protected APIContext<TKey> DbContext { get; }
+            protected IAPIContext DbContext { get; }
             protected IMapper Mapper { get; }
 
-            public BaseEntityService (APIContext<TKey> DbContext, IMapper Mapper) {
+            public BaseEntityService (IAPIContext DbContext, IMapper Mapper) {
                 this.DbContext = DbContext;
                 this.Mapper = Mapper;
             }
             public abstract IEnumerable<TEntity> FindAll();
             public abstract Task<List<TEntity>> FindAllAsync();
-            public abstract TEntity FindOne (TKey Id);
-            public abstract Task<TEntity> FindOneAsync(TKey Id);
+            public abstract TEntity FindOne (Guid Id);
+            public abstract Task<TEntity> FindOneAsync(Guid Id);
     }
 }

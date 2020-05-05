@@ -2,7 +2,6 @@ version: "3.0"
 services:
 
     webapi_service:
-        image: phrygia_webapi_service
         build:
           context: .
           dockerfile: ./AppServices/WebAPIService/Dockerfile        
@@ -28,7 +27,6 @@ services:
           
           
     identity_service:
-        image: phrygia_identity_service
         build:
           context: ./AppServices/IdentityService
           dockerfile: Dockerfile        
@@ -60,7 +58,6 @@ services:
 
     
     rabbitmq:
-        image: rabbitmq
         build:
           context: ./ThirdPartyImages
           dockerfile: RabbitMQ
@@ -86,7 +83,6 @@ services:
             - "15672:15672"
 
     notification_worker:
-        image: phrygia_notification_worker
         build:
           context: .
           dockerfile: ./AppServices/WorkerServices/NotificationWorkerService/Dockerfile        

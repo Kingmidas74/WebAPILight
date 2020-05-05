@@ -1,15 +1,15 @@
 using System;
 using System.Linq.Expressions;
-using DataAccess;
+using Domain;
 
 namespace BusinessServices.Specifications
 {
-    public class FindByIdSpecification<T,L>:LinqSpecification<T>
-        where T:DataBaseEntity<L>
+    public class FindByIdSpecification<T>:LinqSpecification<T>
+        where T:IEntity
     {
-        private readonly L Id;
+        private readonly Guid Id;
     
-        public FindByIdSpecification(L Id)
+        public FindByIdSpecification(Guid Id)
         {
             this.Id=Id;
         }

@@ -1,8 +1,8 @@
-using BusinessServices.Models;
+using Domain;
 
 namespace BusinessServices.Interfaces
 {
-    public interface IParentService<T>:IBusinessEntityService<Parent<T>,T>    
+    public interface IParentService:IBusinessEntityService<Parent>    
     {
          
     }

@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPIService.Enums;
 using WebAPIService.Extensions;
-using WebAPIService.Services;
+using MessageBusServices;
+using Domain.Extensions;
 
 namespace WebAPIService.Controllers {
 
     [Route ("api/[controller]")]
     [ApiController]
     public class StatusController : ControllerBase {
-        private MessageService MessageService;
-        public StatusController (MessageService messageService) {
+        private MessageProducerService MessageService;
+        public StatusController (MessageProducerService messageService) {
             this.MessageService = messageService;
         }
 
