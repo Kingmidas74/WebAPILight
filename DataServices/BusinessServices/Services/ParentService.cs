@@ -1,21 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using BusinessServices.Specifications;
 using Domain;
-using BusinessServices.Base;
 using DataAccess;
-using BusinessServices.Interfaces;
 
 namespace BusinessServices.Services
 {
-    public class ParentService : BaseEntityService<Parent>, IParentService {
+    public class ParentService : BaseEntityService<Parent> {
 
-        public ParentService (IAPIContext DbContext, IMapper Mapper) : base (DbContext, Mapper) {
+        public ParentService (IAPIContext DbContext) : base (DbContext) {
 
         }
 
@@ -31,9 +27,8 @@ namespace BusinessServices.Services
 
         public override Parent FindOne(Guid Id)
         {
-            return Mapper.Map<Parent>(this.DbContext.Parents.Single(
-                    new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression)
-                );
+            return this.DbContext.Parents.Single(
+                    new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression);
         }
 
         public override async Task<Parent> FindOneAsync(Guid Id)
@@ -57,16 +52,12 @@ namespace BusinessServices.Services
         }
 
         public override void RemoveById (Guid Id) {
-            this.DbContext.Parents.Remove(
-                this.DbContext.Parents.Single(
-                    new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression));
+            this.DbContext.Parents.Remove(FindOne(Id));
             this.DbContext.SaveChanges ();
         }
 
         public override async Task RemoveByIdAsync (Guid Id) {            
-            this.DbContext.Parents.Remove(
-                await this.DbContext.Parents.SingleAsync(
-                    new FindByIdSpecification<Parent>(Id).IsSatisfiedByExpression));
+            this.DbContext.Parents.Remove(await FindOneAsync(Id));
             await this.DbContext.SaveChangesAsync ();
         }
     }

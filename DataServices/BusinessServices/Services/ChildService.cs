@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BusinessServices.Base;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using DataAccess;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +10,7 @@ using BusinessServices.Specifications;
 namespace BusinessServices.Services {
     public class ChildService : BaseEntityService<Child> {
 
-        public ChildService (IAPIContext DbContext, IMapper Mapper) : base (DbContext, Mapper) {
+        public ChildService (IAPIContext DbContext) : base (DbContext) {
 
         }
         public override IEnumerable<Child> FindAll()
@@ -51,12 +48,12 @@ namespace BusinessServices.Services {
         }
 
         public override void RemoveById (Guid Id) {
-            this.DbContext.Children.Remove (this.DbContext.Children.Single (new FindByIdSpecification<Child>(Id).IsSatisfiedByExpression));
+            this.DbContext.Children.Remove (FindOne(Id));
             this.DbContext.SaveChanges ();
         }
 
         public override async Task RemoveByIdAsync (Guid Id) {
-            this.DbContext.Children.Remove (await this.DbContext.Children.SingleAsync(new FindByIdSpecification<Child>(Id).IsSatisfiedByExpression));
+            this.DbContext.Children.Remove (await FindOneAsync(Id));
             this.DbContext.SaveChanges ();
         }
     }

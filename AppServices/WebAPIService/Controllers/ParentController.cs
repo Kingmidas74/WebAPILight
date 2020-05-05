@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using BusinessServices.MediatR;
+using BusinessServices.Modules.ParentModule;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

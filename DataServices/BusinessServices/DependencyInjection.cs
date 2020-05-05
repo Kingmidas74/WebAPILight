@@ -1,7 +1,4 @@
-
-
-using BusinessServices.MediatR;
-using BusinessServices.MediatR.PipelineBehaviors;
+using BusinessServices.PipelineBehaviors;
 using BusinessServices.Services;
 using FluentValidation;
 using MediatR;
