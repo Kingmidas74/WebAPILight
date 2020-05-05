@@ -13,8 +13,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+  <ItemGroup>    
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.3" />
@@ -30,6 +29,8 @@
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
     <PackageReference Include="Serilog.Filters.Expressions" Version="2.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="serilog.sinks.elasticsearch" Version="8.1.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.3.1" />
   </ItemGroup>
 
@@ -47,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-      <Compile Remove="Versions\Any\**\*.cs"  Condition="'$(ConfigurationName)' != 'Debug'"/>
+      <Compile Remove="Versions\Any\**\*.cs" Condition="'$(ConfigurationName)' != 'Debug'" />
   </ItemGroup>
 
 </Project>
