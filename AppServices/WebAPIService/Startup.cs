@@ -1,5 +1,4 @@
 using System;
-using AutoMapper;
 using BusinessServices;
 using DataAccess;
 using DataAccess.Extensions;
@@ -14,16 +13,16 @@ using WebAPIService.Middleware;
 using WebAPIService.Models;
 using MessageBusServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Prometheus;
 
 namespace WebAPIService
-{
+{   
     public class Startup {
         private readonly string CorsPolicy = nameof (CorsPolicy);
         public IConfiguration Configuration { get; }
 
         public Startup (IConfiguration configuration) {
-            Configuration = configuration;
-            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
+            Configuration = configuration;            
         }
 
         private JsonSerializerSettings ConfigureJSON() {
@@ -43,13 +42,14 @@ namespace WebAPIService
             
             var applicationOptions = new WebAPIService.Models.ApplicationOptions ();
             Configuration.GetSection (nameof (WebAPIService.Models.ApplicationOptions)).Bind (applicationOptions);            
-            
+                        
             services.AddSwagger ();
             services.AddAuth (applicationOptions.IdentityServiceURI);            
             services.AddSQL (Configuration.GetConnectionString ("DefaultConnection"));
             services.AddQueueService (applicationOptions.RabbitMQSeriveURI);
             services.AddBusinessServices();
-            services.AddAutoMapper (typeof (Startup));
+
+            services.AddSingleton<MetricReporter>();
 
             services.AddControllers ()
                 .AddNewtonsoftJson (options => {
@@ -67,11 +67,17 @@ namespace WebAPIService
         }
 
         public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
-            app.UseMiddleware<RequestResponseLoggingMiddleware> ();
-            app.UseCors (nameof (CorsPolicy));
+            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
             
-            app.UseCustomExceptionHandler();
+            app.UseMiddleware<RequestResponseLoggingMiddleware> ();
+            app.UseMiddleware<ResponseMetricMiddleware>();
+            app.UseMiddleware<CountRequestMiddleware>();
 
+            app.UseCors (nameof (CorsPolicy));
+            app.UseMetricServer(); 
+            app.UseCustomExceptionHandler();
+            app.UseHttpMetrics();
+            
             app.UseSwagger ();
             app.UseSwaggerUI (c => {
                 foreach ( var description in provider.ApiVersionDescriptions )

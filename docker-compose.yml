@@ -6,6 +6,7 @@ services:
           context: .
           dockerfile: ./AppServices/WebAPIService/Dockerfile        
         container_name: webapi_service
+        restart: unless-stopped
         ports:
           - "5002:80"
           - "5003:443"
@@ -33,6 +34,7 @@ services:
           context: ./AppServices/IdentityService
           dockerfile: Dockerfile        
         container_name: identity_service
+        restart: unless-stopped
         ports:
           - "5000:80"
           - "5001:443"
@@ -53,6 +55,7 @@ services:
         ports: 
           - "5432:5432"
         container_name: pg
+        restart: unless-stopped
         environment:
             PGDATA: "/var/lib/postgresql/data/pgdata"
             POSTGRES_PASSWORD: "IlJU7f71Vh7rM1yv"
@@ -64,6 +67,7 @@ services:
           context: ./ThirdPartyImages
           dockerfile: RabbitMQ
         container_name: rabbitmq
+        restart: unless-stopped
         environment: 
           RABBITMQ_DEFAULT_USER: "rabbitmq"
           RABBITMQ_DEFAULT_PASS: "IlJU7f71Vh7rM1yv"
@@ -89,7 +93,7 @@ services:
           context: .
           dockerfile: ./AppServices/WorkerServices/NotificationWorkerService/Dockerfile        
         container_name: notification_worker
-        restart: on-failure
+        restart: unless-stopped
         environment: 
           RMQ_USER: "rabbitmq"
           RMQ_PASSWORD: "IlJU7f71Vh7rM1yv"
@@ -101,6 +105,8 @@ services:
           
     seq:
      image: datalust/seq
+     container_name: seq
+     restart: unless-stopped
      ports:
       - 5341:5341
       - 5340:80
@@ -109,6 +115,26 @@ services:
      volumes: 
       - seq_data:/data
 
+    prometheus:
+      image: prom/prometheus
+      container_name: prometheus
+      restart: unless-stopped
+      ports:
+        - 9090:9090
+      volumes:
+        - ./ThirdPartyImages/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+    grafana: 
+      image: grafana/grafana      
+      environment:
+        GF_SECURITY_ADMIN_PASSWORD: "IlJU7f71Vh7rM1yv"
+      container_name: grafana
+      restart: unless-stopped
+      ports:
+        - 3000:3000
+      volumes: 
+        - grafana-storage:/var/lib/grafana grafana/grafana
+
 
 volumes: 
   pg_data:
@@ -116,4 +142,5 @@ volumes:
   rmq_data:
   rmq_logs:
   seq_data:
+  grafana-storage:
 
