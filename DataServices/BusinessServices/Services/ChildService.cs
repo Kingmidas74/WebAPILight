@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Domain;
 using BusinessServices.Specifications;
+using System.Threading;
 
 namespace BusinessServices.Services {
     public class ChildService : BaseEntityService<Child> {
@@ -18,7 +19,7 @@ namespace BusinessServices.Services {
             return this.DbContext.Children;
         }
 
-        public override async Task<List<Child>> FindAllAsync()
+        public override async Task<List<Child>> FindAllAsync(CancellationToken cancellationToken = default)
         {
             return await this.DbContext.Children.ToListAsync();
         }
@@ -28,7 +29,7 @@ namespace BusinessServices.Services {
             return this.DbContext.Children.Single(new FindByIdSpecification<Child>(Id).IsSatisfiedByExpression);
         }
 
-        public override async Task<Child> FindOneAsync(Guid Id)
+        public override async Task<Child> FindOneAsync(Guid Id, CancellationToken cancellationToken = default)
         {
             return await this.DbContext.Children.SingleAsync(new FindByIdSpecification<Child>(Id).IsSatisfiedByExpression);
         }
@@ -40,7 +41,7 @@ namespace BusinessServices.Services {
             return FindOne(child.Id);
         }
 
-        public override async Task<Child> CreateAsync(Child child)
+        public override async Task<Child> CreateAsync(Child child, CancellationToken cancellationToken = default)
         {
             await DbContext.Children.AddAsync(child);
             await DbContext.SaveChangesAsync();
@@ -52,7 +53,7 @@ namespace BusinessServices.Services {
             this.DbContext.SaveChanges ();
         }
 
-        public override async Task RemoveByIdAsync (Guid Id) {
+        public override async Task RemoveByIdAsync (Guid Id, CancellationToken cancellationToken = default) {
             this.DbContext.Children.Remove (await FindOneAsync(Id));
             this.DbContext.SaveChanges ();
         }
