@@ -23,7 +23,7 @@ namespace BusinessServices.Services
 
         public override async Task<List<Parent>> FindAllAsync(CancellationToken cancellationToken = default)
         {
-            return await this.DbContext.Parents.ToListAsync();
+            return await this.DbContext.Parents.Include(x=>x.Children).ToListAsync();
         }
 
         public override Parent FindOne(Guid Id)

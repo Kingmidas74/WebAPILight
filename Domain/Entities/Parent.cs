@@ -9,6 +9,6 @@ namespace Domain
         public string SecondName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDay { get; set; }
-        public virtual IEnumerable<Child> Children { get; set; } = Enumerable.Empty<Child>();
+        public virtual ICollection<Child> Children { get; set; }
     }
 }
