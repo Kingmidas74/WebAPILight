@@ -49,7 +49,7 @@ services:
 
 
     db:
-        image: postgres:12.2-alpine
+        image: postgres:11.7-alpine
         volumes: 
           - pg_data:/var/lib/postgresql/data        
         ports: 
