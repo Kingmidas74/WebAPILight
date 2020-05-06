@@ -8,8 +8,8 @@ services:
         container_name: webapi_service
         restart: unless-stopped
         ports:
-          - "5002:80"
-          - "5003:443"
+          - "5002:5002"
+          - "5003:5003"
         environment: 
           API_DB_HOST: "172.17.0.1"
           API_DB_PORT: "5432"

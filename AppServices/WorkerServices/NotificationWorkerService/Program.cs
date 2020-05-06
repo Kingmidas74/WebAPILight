@@ -44,8 +44,9 @@ namespace NotificationWorkerService {
             .ConfigureServices ((hostContext, services) => {
                 IConfiguration configuration = hostContext.Configuration;
                 var rabbitMQSettings = new RabbitMQSettings ();
-                configuration.GetSection (nameof (RabbitMQSettings)).Bind (rabbitMQSettings);
-                var rabbitMQSeriveURI = string.Format (rabbitMQSettings.RabbitMQSeriveURI, System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_USER)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PASSWORD)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PORT)));
+                var settings = configuration.GetSection (nameof (RabbitMQSettings)).Get<RabbitMQSettings>();                
+                configuration.GetSection (nameof (RabbitMQSettings)).Bind (rabbitMQSettings);        
+                var rabbitMQSeriveURI = string.Format (settings.RabbitMQServiceURI, System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_USER)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PASSWORD)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.RMQ_PORT)));
 
                 services.AddTransient<MessageService> (s => {
                     var factory = new ConnectionFactory {
