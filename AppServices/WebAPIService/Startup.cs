@@ -73,7 +73,7 @@ namespace WebAPIService
         public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
             Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
             
-           // app.UseMiddleware<RequestResponseLoggingMiddleware> ();
+            app.UseMiddleware<RequestResponseLoggingMiddleware> ();
             app.UseMiddleware<ResponseMetricMiddleware>();
             app.UseMiddleware<CountRequestMiddleware>();
             
@@ -82,7 +82,7 @@ namespace WebAPIService
 
             app.UseCors (nameof (CorsPolicy));
             app.UseMetricServer(); 
-        //    app.UseCustomExceptionHandler();
+            app.UseCustomExceptionHandler();
             app.UseHttpMetrics();
             app.UseDeveloperExceptionPage();  
             app.UseSwagger ();
@@ -108,7 +108,7 @@ namespace WebAPIService
                     var context = serviceScope.ServiceProvider.GetRequiredService<APIContext> ();                    
                     
                     context.Database.EnsureCreated();
-
+                    
                     if(!context.AllMigrationsApplied())
                     {
                         context.Database.Migrate();
