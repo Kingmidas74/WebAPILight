@@ -14,6 +14,7 @@ using WebAPIService.Models;
 using MessageBusServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Prometheus;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
 
 namespace WebAPIService
 {   
@@ -42,7 +43,10 @@ namespace WebAPIService
             
             var applicationOptions = new WebAPIService.Models.ApplicationOptions ();
             Configuration.GetSection (nameof (WebAPIService.Models.ApplicationOptions)).Bind (applicationOptions);            
-                        
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/dist";
+            });
             services.AddSwagger ();
             services.AddAuth (applicationOptions.IdentityServiceURI);            
             services.AddSQL (Configuration.GetConnectionString ("DefaultConnection"));
@@ -69,21 +73,24 @@ namespace WebAPIService
         public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
             Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
             
-            app.UseMiddleware<RequestResponseLoggingMiddleware> ();
+           // app.UseMiddleware<RequestResponseLoggingMiddleware> ();
             app.UseMiddleware<ResponseMetricMiddleware>();
             app.UseMiddleware<CountRequestMiddleware>();
+            
+            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
 
             app.UseCors (nameof (CorsPolicy));
             app.UseMetricServer(); 
-            app.UseCustomExceptionHandler();
+        //    app.UseCustomExceptionHandler();
             app.UseHttpMetrics();
-            
+            app.UseDeveloperExceptionPage();  
             app.UseSwagger ();
             app.UseSwaggerUI (c => {
                 foreach ( var description in provider.ApiVersionDescriptions )
                 {
                     c.SwaggerEndpoint ($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
-                    c.RoutePrefix = string.Empty;                    
+                    c.RoutePrefix = "swagger";                    
                 }
                 
             });
@@ -111,6 +118,13 @@ namespace WebAPIService
                     Log.Warning (e.Message);
                 }
             }
+
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "ClientApp";
+
+                spa.UseAngularCliServer(npmScript: "start");
+            });
         }
     }
 }
