@@ -1,4 +1,6 @@
-using IdentityService.Models;
+using System.Threading.Tasks;
+using IdentityService.CQRS;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IdentityService.Controllers
@@ -7,28 +9,32 @@ namespace IdentityService.Controllers
     [ApiController]
     public class IdentityController:ControllerBase
     {
-        private IUserRepository UserRepository { get; }
+        private readonly IMediator Mediator;
 
-        public IdentityController(IUserRepository userRepository)
+        public IdentityController(IMediator mediator)
         {
-            this.UserRepository = userRepository;
+            this.Mediator = mediator;
         }   
 
-        [HttpGet]
-        public IActionResult Status() {
-            return Ok();
-        }
-
+        /// <summary>
+        /// Create new identity
+        /// </summary>
+        /// <param name="createIdentityCommand"></param>
+        /// <returns></returns>
         [HttpPost(nameof(CreateIdentity))]
-        public IActionResult CreateIdentity([FromBody]CreateIdentityParameter createIdentityParameter) {
-            var identity = UserRepository.CreateIdentity(createIdentityParameter);
-            return Ok(identity);
+        public async Task<IActionResult> CreateIdentity([FromBody]CreateIdentityCommand createIdentityCommand) {
+            
+            return Created(string.Empty,await this.Mediator.Send(createIdentityCommand));
         }
 
+        /// <summary>
+        /// Confirm identity
+        /// </summary>
+        /// <param name="confirmIdentityCommand"></param>
+        /// <returns></returns>
         [HttpPost(nameof(ConfirmIdentity))]
-        public IActionResult ConfirmIdentity([FromBody]ConfirmIdentityParameter confirmIdentityParameter) {
-            var id = UserRepository.ConfirmIdentity(confirmIdentityParameter);
-            return Redirect(confirmIdentityParameter.Redirect);
-        }      
+        public async Task<IActionResult> ConfirmIdentity([FromBody]ConfirmIdentityCommand confirmIdentityCommand) {
+            return Redirect(await this.Mediator.Send(confirmIdentityCommand));
+        }     
     }
 }

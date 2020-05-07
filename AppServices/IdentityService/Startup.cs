@@ -1,11 +1,13 @@
 using System;
+using FluentValidation;
 using IdentityServer4.Models;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using IdentityService.PipelineBehaviors;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -22,13 +24,13 @@ namespace IdentityService {
         }
 
         public void ConfigureServices (IServiceCollection services) {
-            services.Configure<ApplicationOptions> (Configuration.GetSection (nameof(ApplicationOptions)));
-            services.AddScoped<AppDbContext> ();
-            services.AddTransient<IUserRepository, UserRepository> ();
-            services.AddDbContextPool<AppDbContext> ((serviceProvider, optionsBuilder) => {
-                optionsBuilder.UseNpgsql (
-                    string.Format (Configuration.GetConnectionString ("DefaultConnection"), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_DB_HOST)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_DB_PORT)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_DB_USER)), System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_DB_PASSWORD))), providerOptions => providerOptions.EnableRetryOnFailure (3));
-            });
+            services.Configure<ApplicationOptions> (Configuration.GetSection (nameof(ApplicationOptions)));            
+            services.AddTransient<UtilsService>();
+            services.AddSQL(Configuration.GetConnectionString ("DefaultConnection"));
+            services.AddMediatR(typeof(Startup));
+            services.AddValidatorsFromAssembly(typeof(Startup).Assembly);    
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
             services
                 .AddIdentityServer (x => {
                     x.IssuerUri = System.Environment.GetEnvironmentVariable (nameof (EnvironmentVariables.PIS_DB_HOST));
@@ -43,7 +45,6 @@ namespace IdentityService {
                 .AddNewtonsoftJson (options => {
                     options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                     options.SerializerSettings.Formatting = Formatting.Indented;
-
                 });
 
             services.AddCors (options => {
@@ -57,7 +58,6 @@ namespace IdentityService {
 
         public void Configure (IApplicationBuilder app) {
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
-                
                 try {
                     var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext> ();                    
                     
@@ -71,9 +71,6 @@ namespace IdentityService {
                 } catch (Exception e) {
                     Log.Warning (e.Message);
                 }
-            }
-            if (Environment.IsDevelopment ()) {
-                app.UseDeveloperExceptionPage ();
             }
 
             app.UseCors (nameof (CorsPolicy));

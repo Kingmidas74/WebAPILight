@@ -1,7 +1,9 @@
 using System;
-namespace IdentityService.Models
+using MediatR;
+
+namespace IdentityService.CQRS
 {
-    public class CreateIdentityParameter
+    public class CreateIdentityCommand:IRequest<Guid>
     {
         public Guid Id {get;set;}
         public string Password {get;set;}
