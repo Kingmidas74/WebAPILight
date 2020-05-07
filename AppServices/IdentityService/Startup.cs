@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using IdentityService.PipelineBehaviors;
 using Newtonsoft.Json;
 using Serilog;
+using Prometheus;
+using IdentityService.Middleware;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace IdentityService {
     public class Startup {
@@ -26,6 +29,8 @@ namespace IdentityService {
         public void ConfigureServices (IServiceCollection services) {
             services.Configure<ApplicationOptions> (Configuration.GetSection (nameof(ApplicationOptions)));            
             services.AddTransient<UtilsService>();
+            services.AddSwagger();
+            services.AddSingleton<MetricReporter>();
             services.AddSQL(Configuration.GetConnectionString ("DefaultConnection"));
             services.AddMediatR(typeof(Startup));
             services.AddValidatorsFromAssembly(typeof(Startup).Assembly);    
@@ -56,7 +61,7 @@ namespace IdentityService {
             });
         }
 
-        public void Configure (IApplicationBuilder app) {
+        public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
                 try {
                     var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext> ();                    
@@ -73,7 +78,27 @@ namespace IdentityService {
                 }
             }
 
+            
+            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
+            
+            app.UseMiddleware<RequestResponseLoggingMiddleware> ();
+            app.UseMiddleware<ResponseMetricMiddleware>();
+            app.UseMiddleware<CountRequestMiddleware>();
+
             app.UseCors (nameof (CorsPolicy));
+            app.UseMetricServer(); 
+            app.UseCustomExceptionHandler();
+            app.UseHttpMetrics();
+            
+            app.UseSwagger ();
+            app.UseSwaggerUI (c => {
+                foreach ( var description in provider.ApiVersionDescriptions )
+                {
+                    c.SwaggerEndpoint ($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                    c.RoutePrefix = string.Empty;                    
+                }
+                
+            });
             app.UseIdentityServer ();
 
             app.UseRouting ();

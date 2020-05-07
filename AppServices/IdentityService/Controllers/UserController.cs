@@ -7,6 +7,7 @@ namespace IdentityService.Controllers
 {    
     [Route ("[controller]")]
     [ApiController]
+    [ApiVersionNeutral]
     public class UserController:ControllerBase
     {
         private readonly IMediator Mediator;
