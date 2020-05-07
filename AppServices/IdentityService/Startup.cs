@@ -13,6 +13,7 @@ using Serilog;
 using Prometheus;
 using IdentityService.Middleware;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Masking.Serilog;
 
 namespace IdentityService {
     public class Startup {
@@ -79,7 +80,9 @@ namespace IdentityService {
             }
 
             
-            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
+            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration)
+                                .Destructure.ByMaskingProperties("Password", "Token")
+                                .CreateLogger ();
             
             app.UseMiddleware<RequestResponseLoggingMiddleware> ();
             app.UseMiddleware<ResponseMetricMiddleware>();
