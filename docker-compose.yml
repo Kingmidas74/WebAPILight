@@ -31,19 +31,20 @@ services:
           
     identity_service:
         build:
-          context: ./AppServices/IdentityService
-          dockerfile: Dockerfile        
+          context: .
+          dockerfile: ./AppServices/IdentityService/Dockerfile        
         container_name: identity_service
         restart: unless-stopped
         ports:
-          - "5000:80"
-          - "5001:443"
+          - "5000:5000"
+          - "5001:5001"
         environment: 
           PIS_DB_HOST: "172.17.0.1"
           PIS_DB_PORT: "5432"
           PIS_DB_USER: "postgres"
           PIS_DB_PASSWORD: "IlJU7f71Vh7rM1yv"
           ASPNETCORE_ENVIRONMENT: "Development"
+          Serilog__WriteTo__2__Args__serverUrl: "http://172.17.0.1:5341"
         depends_on:
           -  db     
 
