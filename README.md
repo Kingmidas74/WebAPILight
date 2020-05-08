@@ -54,7 +54,7 @@ Services will be available on the next adresses by default.
 
 | Service       |       URI     |
 | ------------- | ------------- |
-| Web API  | http://localhost:5002  |
+| Web API (Angular client)  | http://localhost:5002  |
 | Identity Service  | http://localhost:5000  |
 | RabbitMQ  | http://localhost:15672  |
 | Seq  | http://localhost:5340  |
