@@ -1,0 +1,65 @@
+<mat-card>
+  <mat-card-title>Registration</mat-card-title>
+  <mat-card-content *ngIf="step==1">
+    <form [formGroup]="form" (ngSubmit)="submit()" #formDir="ngForm" novalidate>
+      <p>
+        <mat-form-field>
+          <input type="email" matInput placeholder="Email" formControlName="userEmail" [errorStateMatcher]="matcher">
+          <mat-error *ngIf="userEmail.hasError('required')">You must type email</mat-error>
+          <mat-error *ngIf="userEmail.hasError('email')">Invalid email</mat-error>
+        </mat-form-field>
+      </p>
+
+      <p>
+        <mat-form-field>
+          <input type="tel" matInput placeholder="Phone number" formControlName="userPhone" [errorStateMatcher]="matcher">
+          <mat-error *ngIf="userPhone.hasError('required')">You must type phone</mat-error>
+        </mat-form-field>
+      </p>
+
+      <p>
+        <mat-form-field>
+          <input type="password" matInput placeholder="Password" formControlName="userPassword" [errorStateMatcher]="matcher">
+          <mat-error *ngIf="userPassword.hasError('required')">You must type password</mat-error>
+          <mat-error *ngIf="userPassword.hasError('length')">Password must be > 6 symbols</mat-error>
+        </mat-form-field>
+      </p>
+
+      <p>
+        <mat-form-field>
+          <input type="password" matInput placeholder="Confirm password" formControlName="userConfirmPassword" [errorStateMatcher]="matcher">
+        </mat-form-field>
+      </p>
+
+      <div class="action-buttons">
+        <div class="button login">
+          <button type="button" mat-button (click)="signin()">Login</button>
+        </div>
+
+        <div class="button registration">
+          <button type="submit" mat-button color="primary" [disabled]="!form.valid">Sign Up</button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+  <mat-card-content *ngIf="step==2">
+    <form [formGroup]="codeform" (ngSubmit)="submitCode()" #formDir="ngForm" novalidate>
+      <p>
+        <mat-form-field>
+          <input type="text" matInput placeholder="Code" formControlName="userCode" [errorStateMatcher]="matcher">
+          <mat-error *ngIf="userCode.hasError('required')">You must type code</mat-error>          
+        </mat-form-field>
+      </p>
+
+      <div class="action-buttons">
+        <div class="button back">
+          <button type="button" mat-button (click)="backToStepOne()">Back</button>
+        </div>
+
+        <div class="button registration">
+          <button type="submit" mat-button color="primary" [disabled]="!codeform.valid">Sign Up</button>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
