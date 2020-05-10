@@ -14,7 +14,6 @@ using WebAPIService.Models;
 using MessageBusServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Prometheus;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
 
 namespace WebAPIService
 {   
@@ -43,10 +42,7 @@ namespace WebAPIService
             
             var applicationOptions = new WebAPIService.Models.ApplicationOptions ();
             Configuration.GetSection (nameof (WebAPIService.Models.ApplicationOptions)).Bind (applicationOptions);            
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/dist";
-            });
+            
             services.AddSwagger ();
             services.AddAuth (applicationOptions.IdentityServiceURI);            
             services.AddSQL (Configuration.GetConnectionString ("DefaultConnection"));
@@ -77,8 +73,7 @@ namespace WebAPIService
             app.UseMiddleware<ResponseMetricMiddleware>();
             app.UseMiddleware<CountRequestMiddleware>();
             
-            app.UseStaticFiles();
-            app.UseSpaStaticFiles();
+            app.UseStaticFiles();            
 
             app.UseCors (nameof (CorsPolicy));
             app.UseMetricServer(); 
@@ -118,13 +113,6 @@ namespace WebAPIService
                     Log.Warning (e.Message);
                 }
             }
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                spa.UseAngularCliServer(npmScript: "start");
-            });
         }
     }
 }
