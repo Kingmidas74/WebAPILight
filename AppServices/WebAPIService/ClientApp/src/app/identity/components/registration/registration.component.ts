@@ -3,7 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Router } from '@angular/router';
 import { takeUntil, catchError, flatMap } from 'rxjs/operators';
-import { Subject, Observable, forkJoin } from 'rxjs';
+import { Subject, Observable, forkJoin, Subscription } from 'rxjs';
 import { FormErrorStateMatcher } from '../../../material/form-error-matcher';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from '../../../../environments/environment';
@@ -17,6 +17,7 @@ import { UserRegistrationData } from '../../models/userRegistrationData';
 export class RegistrationComponent implements OnInit, OnDestroy {
 
   private unsubscribe$: Subject<any> = new Subject<any>();
+  subscriptions:Array<Subscription> = new Array<Subscription>();
   form: FormGroup;
   codeform:FormGroup;
   matcher = new FormErrorStateMatcher();
@@ -53,6 +54,9 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {       
+    this.subscriptions.forEach(element => {
+      element.unsubscribe();
+    });
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
@@ -66,7 +70,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   submit() {
     if (!this.form.valid) {
       console.error(this.form.errors);
-    }    
+    }        
     this.athenticationService
         .createIdentity(this.form.value.userPhone,
                         this.form.value.userEmail,
@@ -93,6 +97,9 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     if (!this.codeform.valid) {
       console.error(this.form.errors);
     }    
+    this.subscriptions.forEach(element => {
+      element.unsubscribe();
+    });
     this.athenticationService
         .confirmIdentity(this.userRegistrationData.Id,
                         this.userRegistrationData.Phone,
@@ -101,7 +108,10 @@ export class RegistrationComponent implements OnInit, OnDestroy {
         .pipe(
           takeUntil(this.unsubscribe$),
           flatMap(
-            data  => this.athenticationService.sendTokenRequest(this.userRegistrationData.Phone, this.userRegistrationData.Password),
+            data  => {
+              this.subscriptions.push(this.athenticationService.sendTokenRequest(this.userRegistrationData.Phone, this.userRegistrationData.Password).subscribe());
+              return data;
+            }
           )
         )
         .subscribe(

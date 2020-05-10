@@ -3,4 +3,5 @@ export class JWTToken {
     expires_in:number;
     token_type:string;
     scope:string;
+    refresh_token:string;
 }

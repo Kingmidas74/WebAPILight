@@ -8,7 +8,7 @@ export const environment = {
     URL: 'http://localhost:5000',
     user: {
       grantType: 'custom',
-      scope: 'phrygiawebapi',
+      scope: 'phrygiawebapi offline_access',
       clientId: 'personal_local',
       secret: 'secret'
     }

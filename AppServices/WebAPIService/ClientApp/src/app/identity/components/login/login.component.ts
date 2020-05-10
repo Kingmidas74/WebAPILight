@@ -4,7 +4,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 
 import { JWTToken } from '../../models/JWTToken';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from 'src/environments/environment';
@@ -16,7 +16,7 @@ import { environment } from 'src/environments/environment';
 })
 export class LoginComponent implements OnInit, OnDestroy {
 
-
+  subscriptions:Array<Subscription> = new Array<Subscription>();
   private unsubscribe$: Subject<any> = new Subject<any>();
   
   constructor(private athenticationService:AuthenticationService,
@@ -36,6 +36,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {    
+    this.subscriptions.forEach(element => {
+      element.unsubscribe();
+    });
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
@@ -46,10 +49,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   get userPassword() { return this.form.value.userPassword; }
 
   submit() {
+    this.subscriptions.forEach(element => {
+      element.unsubscribe();
+    });
     if (!this.form.valid) {
       console.error(this.form.errors);
     }    
-    this.athenticationService
+    this.subscriptions.push(this.athenticationService
     .sendTokenRequest(this.userPhone,this.userPassword)
     .pipe(
       takeUntil(this.unsubscribe$)          
@@ -64,7 +70,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           announcementMessage: error
         });
       }
-    );
+    ));
   }
 
   signup() {

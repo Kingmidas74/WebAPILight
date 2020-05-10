@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError, interval, Subject, timer, Subscription } from 'rxjs';
+import { catchError, map, tap, switchMap, takeUntil, timeout } from 'rxjs/operators';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { StorageMap } from '@ngx-pwa/local-storage';
 import { environment } from '../../../environments/environment';
@@ -16,24 +16,57 @@ import * as uuid from 'uuid';
 })
 export class AuthenticationService {
 
-  private identityError:BehaviorSubject<string> = new BehaviorSubject<string>('');
-  identityError$ = this.identityError.asObservable();
-  public token:BehaviorSubject<JWTToken> = new BehaviorSubject<JWTToken>(new JWTToken());
 
-  constructor(private httpClient:HttpClient, private storage: StorageMap) {};
+  subscriptions:Array<Subscription> = new Array<Subscription>();
   
-  public sendTokenRequest(userPhone:string, userPassword:string):Observable<any> {  
-    const body = new HttpParams()
-      .set('grant_type', environment.identityService.user.grantType)
-      .set('scope', environment.identityService.user.scope)
-      .set('client_id', environment.identityService.user.clientId)
-      .set('client_secret', environment.identityService.user.secret)
-      .set('phone', userPhone)
-      .set('password', userPassword);
-    return this.httpClient.post('/connect/token',body).pipe(
-      catchError((error)=>this.handleError(error)),
-      tap(response => this.storage.set(environment.constants.JWTTokenStorageKey,response).subscribe(() => {}))
+  constructor(private httpClient:HttpClient, private storage: StorageMap) {
+    
+  };
+
+  public IsAuthenticatedUser():Observable<boolean> {
+    return this.storage.get<JWTToken>(environment.constants.JWTTokenStorageKey)
+    .pipe(      
+      map(response => !!response),
+      catchError(err => {
+        return Observable.throw(false)
+      })   
     );
+  }
+
+  startTokenRefresh() {
+    this.storage.get<JWTToken>(environment.constants.JWTTokenStorageKey).toPromise()
+    .then(token=> {
+      this.subscriptions.push(
+        interval((token as JWTToken).expires_in/3/*-(response as JWTToken).expires_in/10*/)
+        .subscribe(()=>(this.refreshToken()))
+      )
+    })
+    .catch(console.error);
+  }
+  
+  public sendTokenRequest(userPhone:string, userPassword:string):Observable<string|JWTToken> {      
+    this.subscriptions.forEach(element => {
+      element.unsubscribe();
+    });
+    const body = new HttpParams()
+    .set('grant_type', environment.identityService.user.grantType)
+    .set('scope', environment.identityService.user.scope)
+    .set('client_id', environment.identityService.user.clientId)
+    .set('client_secret', environment.identityService.user.secret)
+    .set('phone', userPhone)
+    .set('password', userPassword);
+  return this.httpClient.post<JWTToken>('/connect/token',body).pipe(
+      catchError((error)=>this.handleError(error)),
+      tap(response => {
+          this.storage.set(environment.constants.JWTTokenStorageKey,response).subscribe();
+      }),
+      tap(response=> {
+          this.subscriptions.push(
+            interval((response as JWTToken).expires_in/3/*-(response as JWTToken).expires_in/10*/)
+            .subscribe(()=>(this.refreshToken()))
+          )
+      })
+    );    
   }
 
   public createIdentity(phone:string, email:string, password:string, confirmPassword:string):Observable<UserRegistrationData> {
@@ -60,6 +93,27 @@ export class AuthenticationService {
       catchError((error)=>this.handleError(error))
     );
   }
+
+  refreshToken() {   
+    this.storage.get<JWTToken>(environment.constants.JWTTokenStorageKey).toPromise()
+      .then(token=>{
+        const body = new HttpParams()
+        .set('grant_type', 'refresh_token')
+        .set('scope', environment.identityService.user.scope)
+        .set('client_id', environment.identityService.user.clientId)
+        .set('refresh_token', (token as JWTToken).refresh_token);
+        console.log("request new token");
+        return this.httpClient.post<JWTToken>('/connect/token',body).pipe(
+          catchError((error)=>this.handleError(error))          
+        ).toPromise();
+      })
+      .then(token=>{        
+        this.storage.set(environment.constants.JWTTokenStorageKey,token).subscribe();
+      })
+      .catch(error=>{
+        console.error("Token wasn't found",error);
+      });
+  };
 
   handleError(error: HttpErrorResponse):Observable<string> {
     if(error.status>=400 && error.status<500) {

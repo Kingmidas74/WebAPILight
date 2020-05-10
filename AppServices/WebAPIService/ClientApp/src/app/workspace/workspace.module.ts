@@ -6,7 +6,6 @@ import { environment } from '../../environments/environment';
 
 import { MaterialModule } from '../material/material.module';
 import { ReactiveFormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { WorkspaceRoutes } from './workspace-routing';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -18,11 +17,15 @@ import { StatisticsComponent } from './components/statistics/statistics.componen
 
 
 
+
 @NgModule({
   declarations: [
     SidebarComponent, 
     NavbarComponent, 
-    FooterComponent, WorkspaceLayoutComponent, DashboardComponent, StatisticsComponent
+    FooterComponent, 
+    WorkspaceLayoutComponent, 
+    DashboardComponent, 
+    StatisticsComponent    
   ],
   imports: [
     CommonModule,
