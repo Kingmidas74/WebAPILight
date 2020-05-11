@@ -88,6 +88,7 @@ services:
         ports:            
             - 15672:15672
 
+
     notification_worker:
         build:
           context: .
@@ -103,17 +104,20 @@ services:
         depends_on:    
           -  rabbitmq  
           
+
     seq:
      image: datalust/seq
      container_name: seq
      restart: unless-stopped
+     expose: 
+      - 5341
      ports:
-      - 5341:5341
       - 5340:80
      environment: 
       ACCEPT_EULA: Y
      volumes: 
       - seq_data:/data
+
 
     prometheus:
       image: prom/prometheus
@@ -123,6 +127,7 @@ services:
         - 9090:9090
       volumes:
         - ./ThirdPartyImages/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
 
     grafana: 
       image: grafana/grafana      
@@ -144,12 +149,12 @@ services:
       ports:
         - 8888:80
       environment: 
-        API_URI: "webapi_service:5002/api"
-        IS_URI:  "identity_service:5000"
-      depends_on:
-        - db
-        - identity_service
-        - webapi_service   
+        API_URI: "webapi_nginx:8989/api"
+        IS_URI:  "identity_nginx:8989"
+      depends_on:        
+        - identity_nginx
+        - webapi_nginx   
+
 
     webapi_nginx:
       build: 
@@ -162,6 +167,7 @@ services:
       depends_on: 
         - webapi_service
     
+
     identity_nginx:
       build: 
         context: .
@@ -182,8 +188,3 @@ volumes:
   seq_data:
   grafana-storage:
 
-networks:
-  front-tier:
-    driver: bridge
-  back-tier:
-    driver: bridge
