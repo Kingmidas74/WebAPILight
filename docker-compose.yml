@@ -1,4 +1,4 @@
-version: "3.0"
+version: "3"
 services:
 
     webapi_service:
@@ -7,22 +7,21 @@ services:
           dockerfile: ./AppServices/WebAPIService/Dockerfile        
         container_name: webapi_service
         restart: unless-stopped
-        ports:
-          - "5002:5002"
-          - "5003:5003"
+        expose:
+          - 5002
         environment: 
-          API_DB_HOST: "172.17.0.1"
+          API_DB_HOST: "db"
           API_DB_PORT: "5432"
           API_DB_USER: "postgres"
           API_DB_PASSWORD: "IlJU7f71Vh7rM1yv"
-          PIS_HOST: "172.17.0.1"
+          PIS_HOST: "identity_service"
           PIS_PORT: "5000"
           RMQ_USER: "rabbitmq"
           RMQ_PASSWORD: "IlJU7f71Vh7rM1yv"
-          RMQ_HOST: "172.17.0.1"
+          RMQ_HOST: "rabbitmq"
           RMQ_PORT: "5672"
           ASPNETCORE_ENVIRONMENT: "Development"          
-          SeqURL: "http://172.17.0.1:5341"
+          SeqURL: "http://seq:5341"
         depends_on:    
           -  identity_service  
           -  rabbitmq  
@@ -36,15 +35,14 @@ services:
         container_name: identity_service
         restart: unless-stopped
         ports:
-          - "5000:5000"
-          - "5001:5001"
+          - 5000:5000          
         environment: 
-          PIS_DB_HOST: "172.17.0.1"
+          PIS_DB_HOST: "db"
           PIS_DB_PORT: "5432"
           PIS_DB_USER: "postgres"
           PIS_DB_PASSWORD: "IlJU7f71Vh7rM1yv"
           ASPNETCORE_ENVIRONMENT: "Development"
-          Serilog__WriteTo__2__Args__serverUrl: "http://172.17.0.1:5341"
+          Serilog__WriteTo__2__Args__serverUrl: "http://seq:5341"
         depends_on:
           -  db     
 
@@ -54,7 +52,7 @@ services:
         volumes: 
           - pg_data:/var/lib/postgresql/data        
         ports: 
-          - "5432:5432"
+          - 5432:5432
         container_name: pg
         restart: unless-stopped
         environment:
@@ -81,13 +79,14 @@ services:
             - rmq_etc:/etc/rabbitmq/
             - rmq_data:/var/lib/rabbitmq/
             - rmq_logs:/var/log/rabbitmq/
-        ports:
-            - "4369:4369"
-            - "5671:5671"
-            - "5672:5672"
-            - "25672:25672"
-            - "15671:15671"
-            - "15672:15672"
+        expose:
+          - 4369
+          - 5671
+          - 5672
+          - 25672
+          - 15671
+        ports:            
+            - 15672:15672
 
     notification_worker:
         build:
@@ -98,7 +97,7 @@ services:
         environment: 
           RMQ_USER: "rabbitmq"
           RMQ_PASSWORD: "IlJU7f71Vh7rM1yv"
-          RMQ_HOST: "172.17.0.1"
+          RMQ_HOST: "rabbitmq"
           RMQ_PORT: "5672"
           DOTNET_ENVIRONMENT: "Development"
         depends_on:    
@@ -143,14 +142,26 @@ services:
       container_name: angular
       restart: unless-stopped
       ports:
-        - "8888:80"
+        - 8888:80
       environment: 
-        API_URI: "172.17.0.1:5002/api"
-        IS_URI:  "172.17.0.1:5000"
+        API_URI: "webapi_service:5002/api"
+        IS_URI:  "identity_service:5000"
       depends_on:
         - db
         - identity_service
         - webapi_service   
+
+    webapi_nginx:
+      build: 
+        context: .
+        dockerfile: ./AppServices/WebAPIService/nginx/Dockerfile
+      container_name: webapi_nginx
+      ports:
+        - 8989:8989
+      depends_on: 
+        - webapi_service
+      
+  
 volumes: 
   pg_data:
   rmq_etc:
@@ -159,3 +170,8 @@ volumes:
   seq_data:
   grafana-storage:
 
+networks:
+  front-tier:
+    driver: bridge
+  back-tier:
+    driver: bridge
