@@ -136,7 +136,21 @@ services:
       volumes: 
         - grafana-storage:/var/lib/grafana grafana/grafana
 
-
+    angular:
+      build:
+        context: .
+        dockerfile: ./ClientApplications/Angular/Dockerfile        
+      container_name: angular
+      restart: unless-stopped
+      ports:
+        - "8888:80"
+      environment: 
+        API_URI: "172.17.0.1:5002/api"
+        IS_URI:  "172.17.0.1:5000"
+      depends_on:
+        - db
+        - identity_service
+        - webapi_service   
 volumes: 
   pg_data:
   rmq_etc:
