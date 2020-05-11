@@ -34,8 +34,8 @@ services:
           dockerfile: ./AppServices/IdentityService/Dockerfile        
         container_name: identity_service
         restart: unless-stopped
-        ports:
-          - 5000:5000          
+        expose:
+          - 5000
         environment: 
           PIS_DB_HOST: "db"
           PIS_DB_PORT: "5432"
@@ -156,10 +156,22 @@ services:
         context: .
         dockerfile: ./AppServices/WebAPIService/nginx/Dockerfile
       container_name: webapi_nginx
+      restart: unless-stopped
       ports:
-        - 8989:8989
+        - 5002:8989
       depends_on: 
         - webapi_service
+    
+    identity_nginx:
+      build: 
+        context: .
+        dockerfile: ./AppServices/IdentityService/nginx/Dockerfile
+      container_name: identity_nginx
+      restart: unless-stopped
+      ports:
+        - 5000:8989
+      depends_on: 
+        - identity_service
       
   
 volumes: 
