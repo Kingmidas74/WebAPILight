@@ -17,7 +17,7 @@
     },
     "SelfHost": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "PIS_DB_HOST": "127.0.0.1",

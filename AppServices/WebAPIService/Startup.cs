@@ -14,6 +14,7 @@ using WebAPIService.Models;
 using MessageBusServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Prometheus;
+using Masking.Serilog;
 
 namespace WebAPIService
 {   
@@ -22,7 +23,7 @@ namespace WebAPIService
         public IConfiguration Configuration { get; }
 
         public Startup (IConfiguration configuration) {
-            Configuration = configuration;            
+            Configuration = configuration;          
         }
 
         private JsonSerializerSettings ConfigureJSON() {
@@ -67,7 +68,10 @@ namespace WebAPIService
         }
 
         public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
-            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration).CreateLogger ();
+            Log.Logger = new LoggerConfiguration ().ReadFrom.Configuration (Configuration)
+                                .Destructure.ByMaskingProperties("Password", "Token")
+                                .WriteTo.Seq(System.Environment.GetEnvironmentVariable(nameof(Models.EnvironmentVariables.SeqURL)))
+                                .CreateLogger();
             
             app.UseMiddleware<RequestResponseLoggingMiddleware> ();
             app.UseMiddleware<ResponseMetricMiddleware>();

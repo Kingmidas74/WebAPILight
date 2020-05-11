@@ -1,6 +1,7 @@
 namespace WebAPIService.Models {
     public enum EnvironmentVariables {        
         PIS_HOST,
-        PIS_PORT        
+        PIS_PORT,
+        SeqURL
     }
 }

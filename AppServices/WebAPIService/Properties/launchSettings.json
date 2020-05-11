@@ -17,7 +17,7 @@
     },
     "SelfHost": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "API_DB_HOST": "127.0.0.1",
@@ -30,7 +30,7 @@
         "RMQ_PASSWORD":"IlJU7f71Vh7rM1yv",
         "RMQ_HOST":"127.0.0.1",
         "RMQ_PORT":"5672",
-        "Serilog__WriteTo__2__Args__serverUrl":"http://localhost:5341"
+        "SeqURL":"http://localhost:5341"
       },
       "applicationUrl": "http://localhost:5005"
     }

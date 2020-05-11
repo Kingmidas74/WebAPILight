@@ -22,7 +22,7 @@ services:
           RMQ_HOST: "172.17.0.1"
           RMQ_PORT: "5672"
           ASPNETCORE_ENVIRONMENT: "Development"          
-          Serilog__WriteTo__2__Args__serverUrl: "http://172.17.0.1:5341"
+          SeqURL: "http://172.17.0.1:5341"
         depends_on:    
           -  identity_service  
           -  rabbitmq  
