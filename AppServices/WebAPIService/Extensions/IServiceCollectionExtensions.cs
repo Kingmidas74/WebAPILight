@@ -18,7 +18,7 @@ namespace WebAPIService
                     options.Authority = identityServerURI;
                     options.RequireHttpsMetadata = false;
 
-                    options.Audience = "phrygiawebapi";
+                    options.Audience = "phrygiawebapi offline_access";
                 });
             return services;
         }
