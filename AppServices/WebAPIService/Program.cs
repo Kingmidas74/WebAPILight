@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,10 +11,10 @@ using Serilog;
 
 namespace WebAPIService {
     public class Program {
-        public static int Main (string[] args) {
+        public static async Task<int> Main (string[] args) {
             try {
                 Console.OutputEncoding = Encoding.UTF8;
-                BuildWebHost (args).Run ();
+                await BuildWebHost (args).RunAsync();
                 return 0;
             } catch (Exception ex) {
                 Log.Fatal(ex,$"Host terminated unexpectedly. {ex.Message}");
