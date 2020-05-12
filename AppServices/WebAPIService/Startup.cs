@@ -103,19 +103,12 @@ namespace WebAPIService
                 endpoints.MapControllers ();
             });
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
-                try {
-                    var context = serviceScope.ServiceProvider.GetRequiredService<APIContext> ();                    
+                var context = serviceScope.ServiceProvider.GetRequiredService<APIContext> ();                    
                     
-                    context.Database.EnsureCreated();
-                    
-                    if(!context.AllMigrationsApplied())
-                    {
-                        context.Database.Migrate();
-                    }
-                    
-                } catch (Exception e) {
-                    Log.Warning (e.Message);
-                }
+                if(!context.AllMigrationsApplied())
+                {
+                    context.Database.Migrate();
+                }                
             }
         }
     }

@@ -64,18 +64,11 @@ namespace IdentityService {
 
         public void Configure (IApplicationBuilder app, IApiVersionDescriptionProvider provider) {
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory> ().CreateScope ()) {
-                try {
-                    var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext> ();                    
-                    
-                    context.Database.EnsureCreated();
-
-                    if(!context.AllMigrationsApplied())
-                    {
-                        context.Database.Migrate();
-                    }
-                    
-                } catch (Exception e) {
-                    Log.Warning (e.Message);
+                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext> ();                    
+                   
+                if(!context.AllMigrationsApplied())
+                {
+                    context.Database.Migrate();
                 }
             }
 
